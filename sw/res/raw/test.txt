@@ -1,0 +1,7 @@
+// small file for testing
+0 3
+0 2
+2 1
+2 3
+4 1
+
