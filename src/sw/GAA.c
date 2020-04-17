@@ -222,6 +222,41 @@ int main(int argc, char** argv) {
 
 
 
+
+
+
+
+    // evolution loop
+    for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
+        /* crossover */
+        // initialize child population
+        Individual* children = malloc(POP_SIZE * sizeof(Individual));
+        CHECK_MALLOC_ERR(children);
+        for (int i=0; i<POP_SIZE; i++) {
+            children[i].partition = malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
+            CHECK_MALLOC_ERR(children[i].partition);
+            // initialize partitions to values in parent population
+            for (int j = 0; j < RESERVE_BITS(graph->v); j++) {
+                (children[i].partition)[j] = (population[i].partition)[j];
+            }
+            // create random order to crossover
+            int order[POP_SIZE];
+            shuffle(&order, POP_SIZE);
+            // crossover, currently single point crossover, change to at least two point later
+            for (int i = 0; i < POP_SIZE; i += 2) {
+                int crossover_point = rand % graph.v; // random point
+                bitarray_t temp[graph.v];
+                for (int i = crossover_point; i < graph.v; i++) {
+                    temp[j] = children[i].partition[j]
+                    children[i].partition[j] = children[i + 1].partition[j];
+                    children[i + 1].partition[j] = temp[j];
+                }
+            }
+        }
+    } // end of evolution loop
+
+
+
     // free population
     for (int i=0; i<POP_SIZE; i++) {
         free(population[i].partition);
@@ -244,5 +279,17 @@ int main(int argc, char** argv) {
 
 int calc_fitness(Graph* graph, Individual* indiv) {
     
+}
+
+void shuffle(int *array, int n) {
+    if (n > 1) {
+        int i;
+        for (i = 0; i < n - 1; i++) {
+            int j = i + rand() / (RAND_MAX / (n - i) + 1);
+            int t = array[j];
+            array[j] = array[i];
+            array[i] = t;
+        }
+    }
 }
 

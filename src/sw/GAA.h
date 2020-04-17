@@ -19,6 +19,9 @@
 #define GZ    3
 #define GRAPH 4
 
+// genetic macros
+#define NUM_OF_GENERATIONS 100
+
 typedef struct Node {
     int id;      // node id
     int weight;  // node weight
