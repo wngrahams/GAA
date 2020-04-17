@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
     // check to make sure input file is a compatable file type
     filetype = strrchr(filename, '.');
-    if (filetype && strcmp(filetype, ".el") == 0) {
+    if (filetype && strcmp(filetype, ".edgelist") == 0) {
         format = EL;
     }
     else {

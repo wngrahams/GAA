@@ -28,7 +28,7 @@ with open(infile, "r") as i_f:
                 edge_list.append((node_dict[split_line[0]], node_dict[split_line[1]]))
 
 
-outfile = Path(infile).stem + ".el"
+outfile = Path(infile).stem + ".edgelist"
 with open(outfile, "w") as o_f:
     o_f.write("|v|: " + str(node_cnt) + "\n")
     o_f.write("|e|: " + str(edge_cnt) + "\n")
