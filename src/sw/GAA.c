@@ -21,7 +21,6 @@ int main(int argc, char** argv) {
     char line[1024];
     char* separators = "\t \n";
     int num_nodes, num_edges;
-    char *left, *right;
 
     Graph* graph;
  
@@ -57,9 +56,8 @@ int main(int argc, char** argv) {
         case EL:
             // read the first two lines to get the number of nodes and edges
             if (fgets(line, sizeof(line), fp)) {
-                left = strtok(line, separators);
-                right = strtok(NULL, separators);
-                num_nodes = atoi(right);
+                strtok(line, separators);
+                num_nodes = atoi(strtok(NULL, separators));
                 graph->v = num_nodes;
                 printf("Number of nodes: %d\n", num_nodes);
             }
@@ -69,9 +67,8 @@ int main(int argc, char** argv) {
             }
 
             if (fgets(line, sizeof(line), fp)) {
-                left = strtok(line, separators);
-                right = strtok(NULL, separators);
-                num_edges = atoi(right);
+                strtok(line, separators);
+                num_edges = atoi(strtok(NULL, separators));
                 graph->e = num_edges;
                 printf("Number of edges: %d\n", num_edges);
             }
@@ -176,6 +173,9 @@ int main(int argc, char** argv) {
                         (graph->edges)[i]->n1, (graph->edges)[i]->n2,
                         (graph->edges)[i]->weight);
     }
+
+    // close file
+    fclose(fp);
 
     // free memory used for graph:
     for (int i=0; i<graph->v; i++) {
