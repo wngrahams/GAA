@@ -188,6 +188,7 @@ int main(int argc, char** argv) {
     Individual* population = malloc(POP_SIZE * sizeof(Individual));
     CHECK_MALLOC_ERR(population);
     for (int i=0; i<POP_SIZE; i++) {
+        // allocate memory for the individual's partition
         population[i].partition = 
                 malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
         CHECK_MALLOC_ERR(population[i].partition);
@@ -242,7 +243,45 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+/*
+ * Calculates fitness of an individual with respect to the associated graph.
+ * An individual with a better partition will have a fitness value closer to 0.
+ */
 int calc_fitness(Graph* graph, Individual* indiv) {
+    int fitness = 0;  
     
+    // for each edge in the graph, add the edge weight to the fitness if the 
+    // two nodes are in different partitions
+    for (int i=0; i<graph->e; i++) {
+        if (getbit(indiv->partition, (graph->edges)[i]->n1) !=
+            getbit(indiv->partition, (graph->edges)[i]->n2)   ) {
+            
+            fitness += (graph->edges)[i]->weight;
+        }
+    }
+
+    // to make lopsided partitions costly, add 
+    // abs|sum of node weights in partition 1 - 
+    //          sum of node weights in partition 2|
+    // to the fitness
+    int p0_weight = 0;
+    int p1_weight = 0;
+
+    for (int i=0; i<graph->v; i++) {
+        int node_weight = (graph->nodes)[i]->weight;
+        if (getbit(indiv->partition, i) == 0)
+            p0_weight += node_weight;
+        else if (getbit(indiv->partition, i) == 1)
+            p1_weight += node_weight;
+        else
+            assert(0);  // oh no
+    }
+
+    if (p1_weight > p0_weight)
+        fitness += (p1_weight - p0_weight);
+    else
+        fitness += (p0_weight - p1_weight);
+
+    return fitness;
 }
 
