@@ -12,6 +12,8 @@
 
 #include "GAA.h"
 
+#define POP_SIZE 10
+
 
 int main(int argc, char** argv) {
 
@@ -158,7 +160,12 @@ int main(int argc, char** argv) {
             ;
     }  /* END switch */
 
+    // close file
+    fclose(fp);
+
     
+    // print graph
+    /*
     printf("Graph:\n");
     printf("\t|v| = %d\n", graph->v);
     printf("\t|e| = %d\n", graph->e);
@@ -172,10 +179,48 @@ int main(int argc, char** argv) {
         printf("\tn1: %d, n2: %d, weight: %d\n", 
                         (graph->edges)[i]->n1, (graph->edges)[i]->n2,
                         (graph->edges)[i]->weight);
+    }*/
+
+
+
+    // initialize population
+    Individual* population = malloc(POP_SIZE * sizeof(Individual));
+    CHECK_MALLOC_ERR(population);
+    for (int i=0; i<POP_SIZE; i++) {
+        population[i].partition = 
+                malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
+        CHECK_MALLOC_ERR(population[i].partition);
+
+        // initialize partitions to 0:
+        for (int j=0; j<RESERVE_BITS(graph->v); j++) {
+            (population[i].partition)[j] = 0;
+        }
+
+        // create a random starting partition: 
+        // TODO: use a better random number generation method (ie for a
+        // more uniform distribution)
+        for (int j=0; j<graph->v; j++) {
+            int rand_bit = rand() % 2;
+            putbit(population[i].partition, j, rand_bit); 
+        }
+
+        // initialize fitness to 0;
+        population[i].fitness = 0;
+
+        printf("Individual %d:\n", i);
+        printf("\tpartition: ");
+        for( int j=0; j<graph->v; j++) {
+            printf("%d", getbit(population[i].partition, j));
+        }
+        printf("\n");
+        printf("\tfitness = %d\n", population[i].fitness);
     }
 
-    // close file
-    fclose(fp);
+    // free population
+    for (int i=0; i<POP_SIZE; i++) {
+        free(population[i].partition);
+    }
+    free(population);
 
     // free memory used for graph:
     for (int i=0; i<graph->v; i++) {

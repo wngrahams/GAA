@@ -8,6 +8,8 @@
 #ifndef _GAA_H_
 #define _GAA_H_
 
+#include "bitarray.h"
+
 #define CHECK_MALLOC_ERR(ptr) ((!check_malloc_err(ptr)) ? (exit(1)) : (1))
 
 // file type macros
@@ -31,9 +33,14 @@ typedef struct Edge {
 typedef struct Graph {
     int v;         // number of nodes
     int e;         // number of edges
-    Node** nodes;  // pointer to array of nodes
-    Edge** edges;  // pointer to array of edges
+    Node** nodes;  // array of pointers to nodes
+    Edge** edges;  // array of pointers to edges
 } Graph;
+
+typedef struct Individual {
+    bitarray_t* partition;  // array of bits representing partition
+    int fitness;                // fitness of individual's solution
+} Individual;
 
 /*
  * This function checks if malloc() returned NULL. If it did, the program
