@@ -94,9 +94,7 @@ int main(int argc, char** argv) {
             // this assumes that the nodes in the file are in ascending order,
             // i.e. the first apperance of node 3 will not be before the first
             // apperance of node 2
-            while (fgets(line, sizeof(line), fp) && 
-                   node_cnt < num_nodes          &&
-                   edge_cnt < num_edges            ) {
+            while (fgets(line, sizeof(line), fp)) {
 
                 left_num = atoi(strtok(line, separators));
                 right_num = atoi(strtok(NULL, separators));
@@ -152,8 +150,8 @@ int main(int argc, char** argv) {
 
             } /* END while fgets */
             
-            assert(graph->v == num_nodes);
-            assert(graph->e == num_edges);
+            assert(graph->v == node_cnt);
+            assert(graph->e == edge_cnt);
 
             break;  /* END case(EL) */ 
 
@@ -241,18 +239,24 @@ int main(int argc, char** argv) {
             }
             // create random order to crossover
             int order[POP_SIZE];
-            shuffle(&order, POP_SIZE);
+            shuffle(order, POP_SIZE);
             // crossover, currently single point crossover, change to at least two point later
             for (int i = 0; i < POP_SIZE; i += 2) {
-                int crossover_point = rand % graph.v; // random point
-                bitarray_t temp[graph.v];
-                for (int i = crossover_point; i < graph.v; i++) {
-                    temp[j] = children[i].partition[j]
+                int crossover_point = rand() % graph->v; // random point
+                bitarray_t temp[graph->v];
+                for (int j = crossover_point; j < graph->v; j++) {
+                    temp[j] = children[i].partition[j];
                     children[i].partition[j] = children[i + 1].partition[j];
                     children[i + 1].partition[j] = temp[j];
                 }
             }
         }
+
+        // free the children
+        for (int i=0; i<POP_SIZE; i++) {
+            free(children[i].partition);
+        }
+        free(children);
     } // end of evolution loop
 
 
@@ -278,17 +282,17 @@ int main(int argc, char** argv) {
 }
 
 int calc_fitness(Graph* graph, Individual* indiv) {
-    
+    return 0;
 }
 
-void shuffle(int *array, int n) {
+void shuffle(int *arr, int n) {
     if (n > 1) {
         int i;
         for (i = 0; i < n - 1; i++) {
             int j = i + rand() / (RAND_MAX / (n - i) + 1);
-            int t = array[j];
-            array[j] = array[i];
-            array[i] = t;
+            int t = arr[j];
+            arr[j] = arr[i];
+            arr[i] = t;
         }
     }
 }
