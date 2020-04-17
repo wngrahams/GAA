@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 
     // check to make sure input file is a compatable file type
     filetype = strrchr(filename, '.');
-    if (strcmp(filetype, ".el") == 0) {
+    if (filetype && strcmp(filetype, ".el") == 0) {
         format = EL;
     }
     else {
@@ -49,17 +49,30 @@ int main(int argc, char** argv) {
     switch (format) {
         case EL:
             // read the first two lines to get the number of nodes and edges
-            fgets(line, sizeof(line), fp);
-            left = strtok(line, separators);
-            right = strtok(NULL, separators);
-            num_nodes = atoi(right);
-            printf("Number of nodes: %d\n", num_nodes);
+            if (fgets(line, sizeof(line), fp)) {
+                left = strtok(line, separators);
+                right = strtok(NULL, separators);
+                num_nodes = atoi(right);
+                printf("Number of nodes: %d\n", num_nodes);
+            }
+            else {
+                fprintf(stderr, "Invalid file!\n");
+                exit(1);
+            }
 
-            fgets(line, sizeof(line), fp);
-            left = strtok(line, separators);
-            right = strtok(NULL, separators);
-            num_edges = atoi(right);
-            printf("Number of edges: %d\n", num_edges);
+            if (fgets(line, sizeof(line), fp)) {
+                left = strtok(line, separators);
+                right = strtok(NULL, separators);
+                num_edges = atoi(right);
+                printf("Number of edges: %d\n", num_edges);
+            }
+            else {
+                fprintf(stderr, "Invalid file!\n");
+                exit(1);
+            }
+
+
+
 
         default:
             ;
