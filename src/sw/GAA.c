@@ -14,7 +14,7 @@
 
 #define POP_SIZE 10
 
-int calc_fitess(Graph*, Individual*);
+int calc_fitness(Graph*, Individual*);
 
 int main(int argc, char** argv) {
 
@@ -94,9 +94,7 @@ int main(int argc, char** argv) {
             // this assumes that the nodes in the file are in ascending order,
             // i.e. the first apperance of node 3 will not be before the first
             // apperance of node 2
-            while (fgets(line, sizeof(line), fp) && 
-                   node_cnt < num_nodes          &&
-                   edge_cnt < num_edges            ) {
+            while (fgets(line, sizeof(line), fp)) {
 
                 left_num = atoi(strtok(line, separators));
                 right_num = atoi(strtok(NULL, separators));
@@ -152,8 +150,8 @@ int main(int argc, char** argv) {
 
             } /* END while fgets */
             
-            assert(graph->v == num_nodes);
-            assert(graph->e == num_edges);
+            assert(graph->v == node_cnt);
+            assert(graph->e == edge_cnt);
 
             break;  /* END case(EL) */ 
 
@@ -206,18 +204,15 @@ int main(int argc, char** argv) {
             putbit(population[i].partition, j, rand_bit); 
         }
 
-        // initialize fitness to 0;
-        //population[i].fitness = 0;
-
         // calculate fitness:
         population[i].fitness = calc_fitness(graph, &(population[i]));
 
         printf("Individual %d:\n", i);
-        printf("\tpartition: ");
-        for( int j=0; j<graph->v; j++) {
-            printf("%d", getbit(population[i].partition, j));
-        }
-        printf("\n");
+        //printf("\tpartition: ");
+        //for( int j=0; j<graph->v; j++) {
+        //    printf("%d", getbit(population[i].partition, j));
+        //}
+        //printf("\n");
         printf("\tfitness = %d\n", population[i].fitness);
     }
 
@@ -253,6 +248,10 @@ int calc_fitness(Graph* graph, Individual* indiv) {
     // for each edge in the graph, add the edge weight to the fitness if the 
     // two nodes are in different partitions
     for (int i=0; i<graph->e; i++) {
+        //printf("node 1: %d ", (graph->edges)[i]->n1);
+        //printf("node 2: %d ", (graph->edges)[i]->n2);
+        //printf("p1: %d ", getbit(indiv->partition, (graph->edges)[i]->n1));
+        //printf("p2: %d\n", getbit(indiv->partition, (graph->edges)[i]->n2));
         if (getbit(indiv->partition, (graph->edges)[i]->n1) !=
             getbit(indiv->partition, (graph->edges)[i]->n2)   ) {
             
