@@ -14,6 +14,7 @@
 
 #define POP_SIZE 10
 
+int calc_fitess(Graph*, Individual*);
 
 int main(int argc, char** argv) {
 
@@ -205,7 +206,10 @@ int main(int argc, char** argv) {
         }
 
         // initialize fitness to 0;
-        population[i].fitness = 0;
+        //population[i].fitness = 0;
+
+        // calculate fitness:
+        population[i].fitness = calc_fitness(graph, &(population[i]));
 
         printf("Individual %d:\n", i);
         printf("\tpartition: ");
@@ -215,6 +219,8 @@ int main(int argc, char** argv) {
         printf("\n");
         printf("\tfitness = %d\n", population[i].fitness);
     }
+
+
 
     // free population
     for (int i=0; i<POP_SIZE; i++) {
@@ -234,5 +240,9 @@ int main(int argc, char** argv) {
     free(graph);
 
     return 0;
+}
+
+int calc_fitness(Graph* graph, Individual* indiv) {
+    
 }
 
