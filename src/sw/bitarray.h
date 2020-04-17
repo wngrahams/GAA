@@ -22,7 +22,7 @@ typedef uint32_t bitarray_t;
 #define putbit(array, index, bit) \
     ((bit)&1 ?  ((array)[DW_INDEX(index)] |= 1<<BIT_INDEX(index)) \
              :  ((array)[DW_INDEX(index)] &= ~(1<<BIT_INDEX(index))) \
-             , 0 \
+             , ((void)0) \
     )
 
 #endif /* _BITARRAY_H_ */
