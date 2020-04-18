@@ -218,6 +218,47 @@ int main(int argc, char** argv) {
 
 
 
+
+
+
+
+    // evolution loop
+    for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
+        /* crossover */
+        // initialize child population
+        Individual* children = malloc(POP_SIZE * sizeof(Individual));
+        CHECK_MALLOC_ERR(children);
+        for (int i=0; i<POP_SIZE; i++) {
+            children[i].partition = malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
+            CHECK_MALLOC_ERR(children[i].partition);
+            // initialize partitions to values in parent population
+            for (int j = 0; j < RESERVE_BITS(graph->v); j++) {
+                (children[i].partition)[j] = (population[i].partition)[j];
+            }
+            // create random order to crossover
+            int order[POP_SIZE];
+            shuffle(order, POP_SIZE);
+            // crossover, currently single point crossover, change to at least two point later
+            for (int i = 0; i < POP_SIZE; i += 2) {
+                int crossover_point = rand() % graph->v; // random point
+                bitarray_t temp[graph->v];
+                for (int j = crossover_point; j < graph->v; j++) {
+                    temp[j] = children[i].partition[j];
+                    children[i].partition[j] = children[i + 1].partition[j];
+                    children[i + 1].partition[j] = temp[j];
+                }
+            }
+        }
+
+        // free the children
+        for (int i=0; i<POP_SIZE; i++) {
+            free(children[i].partition);
+        }
+        free(children);
+    } // end of evolution loop
+
+
+
     // free population
     for (int i=0; i<POP_SIZE; i++) {
         free(population[i].partition);
@@ -243,6 +284,7 @@ int main(int argc, char** argv) {
  * An individual with a better partition will have a fitness value closer to 0.
  */
 int calc_fitness(Graph* graph, Individual* indiv) {
+
     int fitness = 0;  
     
     // for each edge in the graph, add the edge weight to the fitness if the 
@@ -282,5 +324,18 @@ int calc_fitness(Graph* graph, Individual* indiv) {
         fitness += (p0_weight - p1_weight);
 
     return fitness;
+
+}
+
+void shuffle(int *arr, int n) {
+    if (n > 1) {
+        int i;
+        for (i = 0; i < n - 1; i++) {
+            int j = i + rand() / (RAND_MAX / (n - i) + 1);
+            int t = arr[j];
+            arr[j] = arr[i];
+            arr[i] = t;
+        }
+    }
 }
 

@@ -19,6 +19,9 @@
 #define GZ    3
 #define GRAPH 4
 
+// genetic macros
+#define NUM_OF_GENERATIONS 100
+
 typedef struct Node {
     int id;      // node id
     int weight;  // node weight
@@ -54,6 +57,9 @@ static inline int8_t check_malloc_err(const void *ptr) {
 
     return 1;
 }
+
+int calc_fitness(Graph*, Individual*);
+void shuffle(int *, int);
 
 #endif  /* _GAA_H */
 
