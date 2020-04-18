@@ -14,7 +14,7 @@
 
 #define POP_SIZE 10
 
-int calc_fitess(Graph*, Individual*);
+int calc_fitness(Graph*, Individual*);
 
 int main(int argc, char** argv) {
 
@@ -186,6 +186,7 @@ int main(int argc, char** argv) {
     Individual* population = malloc(POP_SIZE * sizeof(Individual));
     CHECK_MALLOC_ERR(population);
     for (int i=0; i<POP_SIZE; i++) {
+        // allocate memory for the individual's partition
         population[i].partition = 
                 malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
         CHECK_MALLOC_ERR(population[i].partition);
@@ -203,18 +204,15 @@ int main(int argc, char** argv) {
             putbit(population[i].partition, j, rand_bit); 
         }
 
-        // initialize fitness to 0;
-        //population[i].fitness = 0;
-
         // calculate fitness:
         population[i].fitness = calc_fitness(graph, &(population[i]));
 
         printf("Individual %d:\n", i);
-        printf("\tpartition: ");
-        for( int j=0; j<graph->v; j++) {
-            printf("%d", getbit(population[i].partition, j));
-        }
-        printf("\n");
+        //printf("\tpartition: ");
+        //for( int j=0; j<graph->v; j++) {
+        //    printf("%d", getbit(population[i].partition, j));
+        //}
+        //printf("\n");
         printf("\tfitness = %d\n", population[i].fitness);
     }
 
@@ -281,8 +279,52 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+/*
+ * Calculates fitness of an individual with respect to the associated graph.
+ * An individual with a better partition will have a fitness value closer to 0.
+ */
 int calc_fitness(Graph* graph, Individual* indiv) {
-    return 0;
+
+    int fitness = 0;  
+    
+    // for each edge in the graph, add the edge weight to the fitness if the 
+    // two nodes are in different partitions
+    for (int i=0; i<graph->e; i++) {
+        //printf("node 1: %d ", (graph->edges)[i]->n1);
+        //printf("node 2: %d ", (graph->edges)[i]->n2);
+        //printf("p1: %d ", getbit(indiv->partition, (graph->edges)[i]->n1));
+        //printf("p2: %d\n", getbit(indiv->partition, (graph->edges)[i]->n2));
+        if (getbit(indiv->partition, (graph->edges)[i]->n1) !=
+            getbit(indiv->partition, (graph->edges)[i]->n2)   ) {
+            
+            fitness += (graph->edges)[i]->weight;
+        }
+    }
+
+    // to make lopsided partitions costly, add 
+    // abs|sum of node weights in partition 1 - 
+    //          sum of node weights in partition 2|
+    // to the fitness
+    int p0_weight = 0;
+    int p1_weight = 0;
+
+    for (int i=0; i<graph->v; i++) {
+        int node_weight = (graph->nodes)[i]->weight;
+        if (getbit(indiv->partition, i) == 0)
+            p0_weight += node_weight;
+        else if (getbit(indiv->partition, i) == 1)
+            p1_weight += node_weight;
+        else
+            assert(0);  // oh no
+    }
+
+    if (p1_weight > p0_weight)
+        fitness += (p1_weight - p0_weight);
+    else
+        fitness += (p0_weight - p1_weight);
+
+    return fitness;
+
 }
 
 void shuffle(int *arr, int n) {
