@@ -220,32 +220,45 @@ int main(int argc, char** argv) {
 
     // evolution loop
     for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
-        /* crossover */
+        
         // initialize child population
         Individual* children = malloc(POP_SIZE * sizeof(Individual));
         CHECK_MALLOC_ERR(children);
+
         for (int i=0; i<POP_SIZE; i++) {
             children[i].partition = 
                     malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
             CHECK_MALLOC_ERR(children[i].partition);
+
             // initialize partitions to values in parent population
             for (int j = 0; j < RESERVE_BITS(graph->v); j++) {
                 (children[i].partition)[j] = (population[i].partition)[j];
             }
+
             // create random order to crossover
-            int order[POP_SIZE];
+            int order = malloc(POP_SIZE * sizeof(int));
+            for (int j=0; j<POP_SIZE; j++) {
+                order[j] = j;
+            }
             shuffle(order, POP_SIZE);
+
             // crossover, currently single point crossover, change to at 
             // least two point later (TODO)
-            for (int i = 0; i < POP_SIZE; i += 2) {
+            for (int j = 0; j < POP_SIZE; j += 2) {
+
                 int crossover_point = rand() % graph->v; // random point
-                bitarray_t temp[graph->v];  // TODO fix this
-                for (int j = crossover_point; j < graph->v; j++) {
-                    temp[j] = children[i].partition[j];
-                    children[i].partition[j] = children[i + 1].partition[j];
-                    children[i + 1].partition[j] = temp[j];
+                bitarray_t temp[RESERVE_BITS(graph->v)];
+
+                for (int k = crossover_point; k < graph->v; k++) {
+                    //temp[k] = children[j].partition[k];
+                    putbit(temp, k, getbit(children[j].partition, k);
+                    //children[j].partition[k] = children[j + 1].partition[k];
+                    putbit(children[j].partition, k, 
+                            getbit(children[j+1].partition, k));
+                    //children[j + 1].partition[k] = temp[k];
+                    putbit(children[j+1].partition, k, getbit(temp, k));
                 }
-            }
+            } /* END CROSSOVER */
         }
 
         // free the children
@@ -325,6 +338,10 @@ int calc_fitness(Graph* graph, Individual* indiv) {
 
 }
 
+/*
+ * Shuffes the array of integers passed to the function
+ * Citation: benpfaff.org/writings/clc/shuffle.html
+ */
 void shuffle(int *arr, int n) {
     if (n > 1) {
         int i;
