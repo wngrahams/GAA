@@ -214,12 +214,8 @@ int main(int argc, char** argv) {
         //}
         //printf("\n");
         printf("\tfitness = %d\n", population[i].fitness);
-    }
 
-
-
-
-
+    } /* END initialize population */
 
 
     // evolution loop
@@ -229,7 +225,8 @@ int main(int argc, char** argv) {
         Individual* children = malloc(POP_SIZE * sizeof(Individual));
         CHECK_MALLOC_ERR(children);
         for (int i=0; i<POP_SIZE; i++) {
-            children[i].partition = malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
+            children[i].partition = 
+                    malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
             CHECK_MALLOC_ERR(children[i].partition);
             // initialize partitions to values in parent population
             for (int j = 0; j < RESERVE_BITS(graph->v); j++) {
@@ -238,10 +235,11 @@ int main(int argc, char** argv) {
             // create random order to crossover
             int order[POP_SIZE];
             shuffle(order, POP_SIZE);
-            // crossover, currently single point crossover, change to at least two point later
+            // crossover, currently single point crossover, change to at 
+            // least two point later (TODO)
             for (int i = 0; i < POP_SIZE; i += 2) {
                 int crossover_point = rand() % graph->v; // random point
-                bitarray_t temp[graph->v];
+                bitarray_t temp[graph->v];  // TODO fix this
                 for (int j = crossover_point; j < graph->v; j++) {
                     temp[j] = children[i].partition[j];
                     children[i].partition[j] = children[i + 1].partition[j];
