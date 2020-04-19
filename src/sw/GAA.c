@@ -295,7 +295,7 @@ int main(int argc, char** argv) {
             // offspring. If no crossover takes place, form two offspring that 
             // are exact copies of their respective parents.
 
-            double crossover_decision = rand()/RAND_MAX;
+            double crossover_decision = (double)rand()/RAND_MAX;
             if (crossover_decision < CROSSOVER_PROB) {
 
                 printf("Performing crossover... ");
@@ -372,6 +372,7 @@ int main(int argc, char** argv) {
             }
             else {
 
+                printf("No crossover.. children will be copies of parents.\n");
                 // the two children are exact copies of the parents
                 for (int j=0; j<RESERVE_BITS(graph->v); j++) {
                     children[ i ].partition[j] = 
