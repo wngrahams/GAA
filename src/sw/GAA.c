@@ -182,6 +182,14 @@ int main(int argc, char** argv) {
     }*/
 
 
+    // seed random number generator
+    srand(time(0));
+    
+    double total_inverse_fitness = 0;  // used in selection to select 
+                                       // individuals with probability 
+                                       // inversely proportional to their
+                                       // fitness (since we are looking to
+                                       // minimize fitness)
 
     // initialize population
     if (!POP_SIZE % 2) {
@@ -190,16 +198,7 @@ int main(int argc, char** argv) {
     }
     Individual* population = malloc(POP_SIZE * sizeof(Individual));
     CHECK_MALLOC_ERR(population);
-
-    double total_inverse_fitness = 0;  // used in selection to select 
-                                       // individuals with probability 
-                                       // inversely proportional to their
-                                       // fitness (since we are looking to
-                                       // minimize fitness)
-
-    // seed random number generator
-    srand(time(0));
-
+    
     for (int i=0; i<POP_SIZE; i++) {
         // allocate memory for the individual's partition
         population[i].partition = 
@@ -220,8 +219,12 @@ int main(int argc, char** argv) {
         }
 
         // calculate fitness:
+        
+        // TODO: take fitness calculation out of loop so that hardware can do
+        // do it all in parallel
         population[i].fitness = calc_fitness(graph, &(population[i]));
         total_inverse_fitness += 1.0/(double)population[i].fitness;
+        
 
         printf("Individual %d:\n", i);
         printf("\tpartition: ");
@@ -232,6 +235,9 @@ int main(int argc, char** argv) {
         printf("\tfitness = %d\n", population[i].fitness);
 
     } /* END initialize population */
+
+    // TODO: calculate initial fitnesses in hardware here
+    //  ---------
 
     printf("Total inverse fitness: %f\n", total_inverse_fitness);
     printf("RAND_MAX: %d\n", RAND_MAX);
@@ -244,6 +250,7 @@ int main(int argc, char** argv) {
         CHECK_MALLOC_ERR(children);
 
         for (int i=0; i<POP_SIZE; i+=2) {
+
             children[i].partition = 
                     malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
             CHECK_MALLOC_ERR(children[i].partition);
@@ -259,6 +266,7 @@ int main(int argc, char** argv) {
             // parent.
             int parent_idxs[2] = {-1, -1};
             for (int j=0; j<2; j++) {
+
                 do {
                     // inverse fitness is used so that an individual with a 
                     // value of fitness closer to 0 is more likely to be 
@@ -276,42 +284,143 @@ int main(int argc, char** argv) {
                 // this makes sure the second parent idx is not the same as the
                 // first
 
-            }
+            } /* END SELECTION */
+
             printf("selected parents %d and %d.\n",parent_idxs[0],parent_idxs[1]);
-            
 
-            /*
+            // CROSSOVER:
+            // With probability CROSSOVER_PROB (the "crossover probability" or 
+            // "crossover rate"), cross over the pair at a randomly chosen 
+            // point (chosen with uniform probability) (TODO) to form two 
+            // offspring. If no crossover takes place, form two offspring that 
+            // are exact copies of their respective parents.
 
-            // initialize partitions to values in parent population
-            for (int j = 0; j < RESERVE_BITS(graph->v); j++) {
-                (children[i].partition)[j] = (population[i].partition)[j];
-            }
+            double crossover_decision = rand()/RAND_MAX;
+            if (crossover_decision < CROSSOVER_PROB) {
 
-            // create random order to crossover
-            int* order = malloc(POP_SIZE * sizeof(int));
-            for (int j=0; j<POP_SIZE; j++) {
-                order[j] = j;
-            }
-            shuffle(order, POP_SIZE);
+                printf("Performing crossover... ");
 
-            // crossover, currently single point crossover, change to at 
-            // least two point later (TODO)
-            for (int j = 0; j < POP_SIZE; j += 2) {
+                // single point crossover -- TODO: change to multiple point, 
+                //     where crossover rate for a pair of parents is the number
+                //     of points at which a crossover takes place.
 
-                int crossover_point = rand() % graph->v; // random point
-                bitarray_t temp[RESERVE_BITS(graph->v)];
+                // choose the bit at which to crossover: (TODO better random)
+                // doesn't pick bit 0 because that is the same as no crossover
+                int crossover_point = (rand()%(graph->v-1)) + 1;  // (0, graph->v)
+                printf("Crossover point = %d\n", crossover_point);
 
-                for (int k = crossover_point; k < graph->v; k++) {
-                    //temp[k] = children[j].partition[k];
-                    putbit(temp, k, getbit(children[j].partition, k));
-                    //children[j].partition[k] = children[j + 1].partition[k];
-                    putbit(children[j].partition, k, 
-                            getbit(children[j+1].partition, k));
-                    //children[j + 1].partition[k] = temp[k];
-                    putbit(children[j+1].partition, k, getbit(temp, k));
+                printf("\tParents: ");
+                for( int j=0; j<graph->v; j++) {
+                    printf("%d", getbit(population[parent_idxs[0]].partition, j));
                 }
-            } *//* END CROSSOVER */
+                printf(", ");
+                for( int j=0; j<graph->v; j++) {
+                    printf("%d", getbit(population[parent_idxs[1]].partition, j));
+                }
+                printf("\n");
+
+                // fill in the non-crossover part of the bitarray as a copy of 
+                // the parents:
+                for (int bit_to_copy=0;
+                         bit_to_copy<crossover_point;
+                         bit_to_copy++) {
+                    
+                    putbit(children[i].partition,
+                           bit_to_copy,
+                           getbit(population[parent_idxs[0]].partition, 
+                                  bit_to_copy
+                                 )
+                          );
+                    putbit(children[i+1].partition,
+                           bit_to_copy,
+                           getbit(population[parent_idxs[1]].partition, 
+                                  bit_to_copy
+                                 )
+                          );
+                }
+
+
+                // do the crossover:
+                for (int bit_to_swap=crossover_point; 
+                         bit_to_swap<graph->v; 
+                         bit_to_swap++) {
+
+                    putbit(children[i].partition, 
+                           bit_to_swap, 
+                           getbit(population[parent_idxs[1]].partition, 
+                                  bit_to_swap
+                                 )
+                          );
+                    putbit(children[i+1].partition,
+                           bit_to_swap,
+                           getbit(population[parent_idxs[0]].partition, 
+                                  bit_to_swap
+                                 )
+                          );
+                }
+
+                printf("\tChildren: ");
+                for( int j=0; j<graph->v; j++) {
+                    printf("%d", getbit(children[i].partition, j));
+                }
+                printf(", ");
+                for( int j=0; j<graph->v; j++) {
+                    printf("%d", getbit(children[i+1].partition, j));
+                }
+                printf("\n");
+
+            }
+            else {
+
+                // the two children are exact copies of the parents
+                for (int j=0; j<RESERVE_BITS(graph->v); j++) {
+                    children[ i ].partition[j] = 
+                            population[parent_idxs[0]].partition[j];
+                    children[i+1].partition[j] = 
+                            population[parent_idxs[1]].partition[j];
+                }       
+
+            } /* END CROSSOVER */
+
+            // MUTATION:
+            // Mutate the two offspring at each locus with probability 
+            // MUTATION_RATE (the mutation probability or mutation rate)
+            for (int childno=0; childno<2; childno++) {
+                for (int locus=0; locus<graph->v; locus++) {
+                    
+                    double mutation_decision1 = rand()/RAND_MAX;
+                    if (mutation_decision1 < MUTATION_PROB) {
+                        
+                        // mutate: 1->0 or 0->1
+                        putbit(children[i+childno].partition,
+                               locus,
+                               !getbit(children[i+childno].partition, locus)
+                              );
+                    }
+
+                }
+            } /* END MUTATION */
+
+            // CALCULATE FITNESS OF NEW CHILDREN
+            // TODO: move this outside of the loop so that the hardware can do
+            // them all in parallel
+            children[ i ].fitness = calc_fitness(graph, &(children[ i ]));
+            children[i+1].fitness = calc_fitness(graph, &(children[i+1]));
+            
+        } /* END loop for one generation: SELECTION, CROSSOVER, MUTATION */
+
+        // Replace the current population with the new population
+        // TODO: instead of making deep copies, freeing the children, and then
+        // reallocating, just move the pointers around
+        for (int i=0; i<POP_SIZE; i++) {
+            for (int j=0; j<RESERVE_BITS(graph->v); j++) {
+                population[i].partition[j] = children[i].partition[j];
+            }
+            population[i].fitness = children[i].fitness;
         }
+
+        // TODO:
+        // Put hardware fitness here (all individuals in parallel)
 
         // free the children
         for (int i=0; i<POP_SIZE; i++) {

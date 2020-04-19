@@ -21,6 +21,8 @@
 
 // genetic macros
 #define NUM_OF_GENERATIONS 1
+#define CROSSOVER_PROB 0.7
+#define MUTATION_PROB 0.001
 
 typedef struct Node {
     int id;      // node id
