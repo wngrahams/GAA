@@ -20,7 +20,7 @@
 #define GRAPH 4
 
 // genetic macros
-#define NUM_OF_GENERATIONS 100
+#define NUM_OF_GENERATIONS 1
 
 typedef struct Node {
     int id;      // node id

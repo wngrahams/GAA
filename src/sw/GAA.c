@@ -9,6 +9,7 @@
 #include <stdio.h>   // printf, fgets
 #include <stdlib.h>  // atoi
 #include <string.h>  // strrchr, strcmp, strtok
+#include <time.h>   // time
 
 #include "GAA.h"
 
@@ -183,8 +184,22 @@ int main(int argc, char** argv) {
 
 
     // initialize population
+    if (!POP_SIZE % 2) {
+        fprintf(stderr, "POPULATION SIZE MUST BE AN EVEN NUMBER");
+        goto cleanup_graph;
+    }
     Individual* population = malloc(POP_SIZE * sizeof(Individual));
     CHECK_MALLOC_ERR(population);
+
+    double total_inverse_fitness = 0;  // used in selection to select 
+                                       // individuals with probability 
+                                       // inversely proportional to their
+                                       // fitness (since we are looking to
+                                       // minimize fitness)
+
+    // seed random number generator
+    srand(time(0));
+
     for (int i=0; i<POP_SIZE; i++) {
         // allocate memory for the individual's partition
         population[i].partition = 
@@ -206,29 +221,66 @@ int main(int argc, char** argv) {
 
         // calculate fitness:
         population[i].fitness = calc_fitness(graph, &(population[i]));
+        total_inverse_fitness += 1.0/(double)population[i].fitness;
 
         printf("Individual %d:\n", i);
-        //printf("\tpartition: ");
-        //for( int j=0; j<graph->v; j++) {
-        //    printf("%d", getbit(population[i].partition, j));
-        //}
-        //printf("\n");
+        printf("\tpartition: ");
+        for( int j=0; j<graph->v; j++) {
+            printf("%d", getbit(population[i].partition, j));
+        }
+        printf("\n");
         printf("\tfitness = %d\n", population[i].fitness);
 
     } /* END initialize population */
 
+    printf("Total inverse fitness: %f\n", total_inverse_fitness);
+    printf("RAND_MAX: %d\n", RAND_MAX);
 
-    // evolution loop
+    // evolutionary loop
     for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
         
         // initialize child population
         Individual* children = malloc(POP_SIZE * sizeof(Individual));
         CHECK_MALLOC_ERR(children);
 
-        for (int i=0; i<POP_SIZE; i++) {
+        for (int i=0; i<POP_SIZE; i+=2) {
             children[i].partition = 
                     malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
             CHECK_MALLOC_ERR(children[i].partition);
+            children[i+1].partition = 
+                    malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
+            CHECK_MALLOC_ERR(children[i].partition);
+
+            // SELECTION:
+            // Select a pair of parent chromosomes from the current population,
+            // the probability of selection being an increasing function of 
+            // fitness. Selection is done "with replacement," meaning that the 
+            // same chromosome can be selected more than once to become a 
+            // parent.
+            int parent_idxs[2] = {-1, -1};
+            for (int j=0; j<2; j++) {
+                do {
+                    // inverse fitness is used so that an individual with a 
+                    // value of fitness closer to 0 is more likely to be 
+                    // selected
+                    double rand_selection = total_inverse_fitness 
+                                            * rand()/RAND_MAX;
+                    double fitness_cnt = 0.0;
+                    for (int k=0; k<POP_SIZE; k++) {
+                        parent_idxs[j] = k;
+                        fitness_cnt += 1.0/(double)population[i].fitness;
+                        if (fitness_cnt >= rand_selection) 
+                            break;
+                    }
+                } while (j == 1 && parent_idxs[0] == parent_idxs[1]);
+                // this makes sure the second parent idx is not the same as the
+                // first
+
+            }
+            printf("selected parents %d and %d.\n",parent_idxs[0],parent_idxs[1]);
+            
+
+            /*
 
             // initialize partitions to values in parent population
             for (int j = 0; j < RESERVE_BITS(graph->v); j++) {
@@ -236,7 +288,7 @@ int main(int argc, char** argv) {
             }
 
             // create random order to crossover
-            int order = malloc(POP_SIZE * sizeof(int));
+            int* order = malloc(POP_SIZE * sizeof(int));
             for (int j=0; j<POP_SIZE; j++) {
                 order[j] = j;
             }
@@ -251,14 +303,14 @@ int main(int argc, char** argv) {
 
                 for (int k = crossover_point; k < graph->v; k++) {
                     //temp[k] = children[j].partition[k];
-                    putbit(temp, k, getbit(children[j].partition, k);
+                    putbit(temp, k, getbit(children[j].partition, k));
                     //children[j].partition[k] = children[j + 1].partition[k];
                     putbit(children[j].partition, k, 
                             getbit(children[j+1].partition, k));
                     //children[j + 1].partition[k] = temp[k];
                     putbit(children[j+1].partition, k, getbit(temp, k));
                 }
-            } /* END CROSSOVER */
+            } *//* END CROSSOVER */
         }
 
         // free the children
@@ -269,13 +321,14 @@ int main(int argc, char** argv) {
     } // end of evolution loop
 
 
-
+cleanup_all:
     // free population
     for (int i=0; i<POP_SIZE; i++) {
         free(population[i].partition);
     }
     free(population);
 
+cleanup_graph:
     // free memory used for graph:
     for (int i=0; i<graph->v; i++) {
         free((graph->nodes)[i]);
