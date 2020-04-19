@@ -6,6 +6,7 @@
  */
 
 #include <assert.h>  // assert
+#include <limits.h>  // INT_MAX
 #include <stdio.h>   // printf, fgets
 #include <stdlib.h>  // atoi
 #include <string.h>  // strrchr, strcmp, strtok
@@ -272,7 +273,7 @@ int main(int argc, char** argv) {
                     // value of fitness closer to 0 is more likely to be 
                     // selected
                     double rand_selection = total_inverse_fitness 
-                                            * rand()/RAND_MAX;
+                                            * ((double)rand()/RAND_MAX);
                     double fitness_cnt = 0.0;
                     for (int k=0; k<POP_SIZE; k++) {
                         parent_idxs[j] = k;
@@ -360,11 +361,11 @@ int main(int argc, char** argv) {
                 }
 
                 printf("\tChildren: ");
-                for( int j=0; j<graph->v; j++) {
+                for (int j=0; j<graph->v; j++) {
                     printf("%d", getbit(children[i].partition, j));
                 }
                 printf(", ");
-                for( int j=0; j<graph->v; j++) {
+                for (int j=0; j<graph->v; j++) {
                     printf("%d", getbit(children[i+1].partition, j));
                 }
                 printf("\n");
@@ -386,11 +387,18 @@ int main(int argc, char** argv) {
             // MUTATION:
             // Mutate the two offspring at each locus with probability 
             // MUTATION_RATE (the mutation probability or mutation rate)
+            
+            printf("Mutation...\n");
             for (int childno=0; childno<2; childno++) {
+                
+                printf("\tMutating child %d at bits: ", childno);
+
                 for (int locus=0; locus<graph->v; locus++) {
                     
-                    double mutation_decision1 = rand()/RAND_MAX;
+                    double mutation_decision1 = (double)rand()/RAND_MAX;
                     if (mutation_decision1 < MUTATION_PROB) {
+
+                        printf("%d, ", locus);
                         
                         // mutate: 1->0 or 0->1
                         putbit(children[i+childno].partition,
@@ -398,8 +406,14 @@ int main(int argc, char** argv) {
                                !getbit(children[i+childno].partition, locus)
                               );
                     }
-
                 }
+                printf("\n");
+                printf("\tResult: ");
+                for (int j=0; j<graph->v; j++) {
+                    printf("%d", getbit(children[i+childno].partition, j));
+                }
+                printf("\n");
+
             } /* END MUTATION */
 
             // CALCULATE FITNESS OF NEW CHILDREN
@@ -428,8 +442,24 @@ int main(int argc, char** argv) {
             free(children[i].partition);
         }
         free(children);
+
     } // end of evolution loop
 
+    // print best individual
+    int min_fitness = INT_MAX;
+    int min_idx = -1;
+    for (int i=0; i<POP_SIZE; i++) {
+        if (population[i].fitness < min_fitness) {
+            min_fitness = population[i].fitness;
+            min_idx = 1;
+        }
+    }
+    printf("Most fit individual: ");
+    for (int i=0; i<graph->v; i++) {
+        printf("%d", getbit(population[min_idx].partition, i));        
+    }
+    printf("\n");
+    printf("\tFitness = %d\n", population[min_idx].fitness);
 
 cleanup_all:
     // free population

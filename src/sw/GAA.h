@@ -20,7 +20,7 @@
 #define GRAPH 4
 
 // genetic macros
-#define NUM_OF_GENERATIONS 1
+#define NUM_OF_GENERATIONS 10
 #define CROSSOVER_PROB 0.7
 #define MUTATION_PROB 0.001
 
