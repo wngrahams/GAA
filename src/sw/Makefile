@@ -19,7 +19,7 @@ default: GAA
 GAA: $(objs) $(INCDEP)
 	$(CC) $(CFLAGS) $(INCDIR) $(LDLIBS) -o GAA $(objs) $(LDFLAGS)
 
-GAA.o: ./GAA.c ./GAA.h ./bitarray.h
+GAA.o: ./GAA.c ./GAA.h ./bitarray.h ./ga-params.h ./graph.h
 	$(CC) $(CFLAGS) $(INCDIR) -c ./GAA.c
 
 .PHONY: clean

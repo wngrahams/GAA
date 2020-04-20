@@ -13,10 +13,10 @@
 #include <time.h>   // time
 
 #include "GAA.h"
+#include "ga-params.h"
 
 #define POP_SIZE 10
 
-int calc_fitness(Graph*, Individual*);
 
 int main(int argc, char** argv) {
 
@@ -445,13 +445,24 @@ int main(int argc, char** argv) {
 
     } // end of evolution loop
 
+    printf("All individuals:\n");
+    for (int i=0; i<POP_SIZE; i++) {
+        printf("Individual %d:\n", i);
+        printf("\tpartition: ");
+        for( int j=0; j<graph->v; j++) {
+            printf("%d", getbit(population[i].partition, j));
+        }
+        printf("\n");
+        printf("\tfitness = %d\n", population[i].fitness);
+    }
+
     // print best individual
     int min_fitness = INT_MAX;
     int min_idx = -1;
     for (int i=0; i<POP_SIZE; i++) {
         if (population[i].fitness < min_fitness) {
             min_fitness = population[i].fitness;
-            min_idx = 1;
+            min_idx = i;
         }
     }
     printf("Most fit individual: ");
