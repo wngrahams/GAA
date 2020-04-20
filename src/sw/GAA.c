@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
         total_inverse_fitness += 1.0/(double)population[i].fitness;
         
 
+        /*
         printf("Individual %d:\n", i);
         printf("\tpartition: ");
         for( int j=0; j<graph->v; j++) {
@@ -86,14 +87,17 @@ int main(int argc, char** argv) {
         }
         printf("\n");
         printf("\tfitness = %d\n", population[i].fitness);
+        */
 
     } /* END initialize population */
 
     // TODO: calculate initial fitnesses in hardware here
     //  ---------
 
+    /*
     printf("Total inverse fitness: %f\n", total_inverse_fitness);
     printf("RAND_MAX: %d\n", RAND_MAX);
+    */
 
     // evolutionary loop
     for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
@@ -139,7 +143,12 @@ int main(int argc, char** argv) {
 
             } /* END SELECTION */
 
-            printf("selected parents %d and %d.\n",parent_idxs[0],parent_idxs[1]);
+            /*
+            printf("selected parents %d and %d.\n",
+                   parent_idxs[0],
+                   parent_idxs[1]
+                  );
+            */
 
             // CROSSOVER:
             // With probability CROSSOVER_PROB (the "crossover probability" or 
@@ -151,7 +160,7 @@ int main(int argc, char** argv) {
             double crossover_decision = (double)rand()/RAND_MAX;
             if (crossover_decision < CROSSOVER_PROB) {
 
-                printf("Performing crossover... ");
+                //printf("Performing crossover... ");
 
                 // single point crossover -- TODO: change to multiple point, 
                 //     where crossover rate for a pair of parents is the number
@@ -160,6 +169,8 @@ int main(int argc, char** argv) {
                 // choose the bit at which to crossover: (TODO better random)
                 // doesn't pick bit 0 because that is the same as no crossover
                 int crossover_point = (rand()%(graph->v-1)) + 1;  // (0, graph->v)
+
+                /*
                 printf("Crossover point = %d\n", crossover_point);
 
                 printf("\tParents: ");
@@ -171,6 +182,7 @@ int main(int argc, char** argv) {
                     printf("%d", getbit(population[parent_idxs[1]].partition, j));
                 }
                 printf("\n");
+                */
 
                 // fill in the non-crossover part of the bitarray as a copy of 
                 // the parents:
@@ -212,6 +224,7 @@ int main(int argc, char** argv) {
                           );
                 }
 
+                /*
                 printf("\tChildren: ");
                 for (int j=0; j<graph->v; j++) {
                     printf("%d", getbit(children[i].partition, j));
@@ -221,11 +234,12 @@ int main(int argc, char** argv) {
                     printf("%d", getbit(children[i+1].partition, j));
                 }
                 printf("\n");
+                */
 
             }
             else {
 
-                printf("No crossover.. children will be copies of parents.\n");
+                //printf("No crossover.. children will be copies of parents.\n");
                 // the two children are exact copies of the parents
                 for (int j=0; j<RESERVE_BITS(graph->v); j++) {
                     children[ i ].partition[j] = 
@@ -240,17 +254,17 @@ int main(int argc, char** argv) {
             // Mutate the two offspring at each locus with probability 
             // MUTATION_RATE (the mutation probability or mutation rate)
             
-            printf("Mutation...\n");
+            //printf("Mutation...\n");
             for (int childno=0; childno<2; childno++) {
                 
-                printf("\tMutating child %d at bits: ", childno);
+                //printf("\tMutating child %d at bits: ", childno);
 
                 for (int locus=0; locus<graph->v; locus++) {
                     
                     double mutation_decision1 = (double)rand()/RAND_MAX;
                     if (mutation_decision1 < MUTATION_PROB) {
 
-                        printf("%d, ", locus);
+                        //printf("%d, ", locus);
                         
                         // mutate: 1->0 or 0->1
                         putbit(children[i+childno].partition,
@@ -259,12 +273,14 @@ int main(int argc, char** argv) {
                               );
                     }
                 }
+                /*
                 printf("\n");
                 printf("\tResult: ");
                 for (int j=0; j<graph->v; j++) {
                     printf("%d", getbit(children[i+childno].partition, j));
                 }
                 printf("\n");
+                */
 
             } /* END MUTATION */
 
@@ -297,6 +313,7 @@ int main(int argc, char** argv) {
 
     } // end of evolution loop
 
+    /*
     printf("All individuals:\n");
     for (int i=0; i<POP_SIZE; i++) {
         printf("Individual %d:\n", i);
@@ -306,7 +323,7 @@ int main(int argc, char** argv) {
         }
         printf("\n");
         printf("\tfitness = %d\n", population[i].fitness);
-    }
+    }*/
 
     // print best individual
     int min_fitness = INT_MAX;
@@ -324,7 +341,6 @@ int main(int argc, char** argv) {
     printf("\n");
     printf("\tFitness = %d\n", population[min_idx].fitness);
 
-//cleanup_all:
     // free population
     for (int i=0; i<POP_SIZE; i++) {
         free(population[i].partition);
