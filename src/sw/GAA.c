@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
     // initialize population
     if (!POP_SIZE % 2) {
         fprintf(stderr, "POPULATION SIZE MUST BE AN EVEN NUMBER");
-        goto cleanup_graph;
+        goto cleanup_graph_contents;
     }
     Individual* population = malloc(POP_SIZE * sizeof(Individual));
     CHECK_MALLOC_ERR(population);
@@ -331,7 +331,7 @@ int main(int argc, char** argv) {
     }
     free(population);
 
-cleanup_graph:
+cleanup_graph_contents:
     // free memory used for graph:
     for (int i=0; i<graph->v; i++) {
         free((graph->nodes)[i]);
@@ -341,6 +341,7 @@ cleanup_graph:
         free((graph->edges)[i]);
     }
     free(graph->edges);
+cleanup_graph:
     free(graph);
 
     return 0;
