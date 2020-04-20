@@ -6,3 +6,8 @@ default:
 clean:
 	cd ./sw && $(MAKE) clean
 
+.PHONY: all
+all:
+	cd ./sw && $(MAKE) all
+
+
