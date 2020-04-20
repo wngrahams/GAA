@@ -1,30 +1,27 @@
-CC = gcc
+CC  = gcc
 CXX = g++
 
-INCDIR = 
-INCDEP = 
+INCLUDES =
 
-CFLAGS = -g -Wall 
-CXXFLAGS = -g -Wall 
+CFLAGS   = -O0 -g -Wall $(INCLUDES)
+CXXFLAGS = -O0 -g -Wall -std=c++11 $(INCLUDES)
 
-LDFLAGS = -g
+LDFLAGS = -g  
+LDLIBS  = 
 
-LDLIBS =
-
-objs = GAA.o
+executables = GAA
+objects = GAA.o graph-parser.o
 
 .PHONY: default
-default: GAA
+default: $(executables)
 
-GAA: $(objs) $(INCDEP)
-	$(CC) $(CFLAGS) $(INCDIR) $(LDLIBS) -o GAA $(objs) $(LDFLAGS)
+$(executables): graph-parser.o
 
-GAA.o: ./GAA.c ./GAA.h ./bitarray.h ./ga-params.h ./graph.h
-	$(CC) $(CFLAGS) $(INCDIR) -c ./GAA.c
+$(objects): ga-utils.h bitarray.h
 
 .PHONY: clean
 clean:
-	rm -rf *.o a.out core GAA *.dSYM
+	rm -f *~ a.out core $(objects) $(executables)
 
 .PHONY: all
 all: clean default
