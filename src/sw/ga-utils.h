@@ -3,8 +3,8 @@
  *
  */
 
-#ifndef __GA_UTILS__
-#define __GA_UTILS__
+#ifndef _GA_UTILS_
+#define _GA_UTILS_
 
 #include <stdint.h>
 #include <stdio.h>
