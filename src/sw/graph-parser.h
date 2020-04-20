@@ -20,3 +20,4 @@
 int parse_graph_from_file(char*, Graph*);
 
 #endif  /* _GRAPH_PARSER_ */
+
