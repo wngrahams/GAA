@@ -17,7 +17,7 @@ default: $(executables)
 
 $(executables): graph-parser.o
 
-$(objects): ga-utils.h bitarray.h
+$(objects): ga-params.h ga-utils.h bitarray.h graph.h
 
 .PHONY: clean
 clean:
