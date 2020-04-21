@@ -1,0 +1,4 @@
+Best results (minimum fitness value) of the Kernighan-Lin Besection Algorithm:
+
+test.edgelist: 2
+
