@@ -321,7 +321,7 @@ int main(int argc, char** argv) {
         free(children);
 
     } // end of evolution loop
-    printf("\n");
+    printf("\r%d generations complete.  \n", NUM_OF_GENERATIONS);
 
     /*
     printf("All individuals:\n");
