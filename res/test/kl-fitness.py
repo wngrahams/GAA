@@ -28,7 +28,7 @@ print("Number of edges: " + str(G.number_of_edges()))
 print()
 
 # run the Kernighan-Lin bisection algorithm:
-partition = nx.algorithms.community.kernighan_lin.kernighan_lin_bisection(G, max_iter=10)
+partition = nx.algorithms.community.kernighan_lin.kernighan_lin_bisection(G, max_iter=1)
 #print(partition[0])
 #print(partition[1])
 #print()
