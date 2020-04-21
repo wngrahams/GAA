@@ -11,10 +11,12 @@
 #include <stdlib.h>  // malloc
 #include <time.h>    // time
 
+#include "bitarray.h"
 #include "GAA.h"
 #include "ga-params.h"
 #include "ga-utils.h"
 #include "graph-parser.h"
+#include "selection.h"
 
 
 int main(int argc, char** argv) {
@@ -128,34 +130,18 @@ int main(int argc, char** argv) {
             // fitness. Selection is done "with replacement," meaning that the 
             // same chromosome can be selected more than once to become a 
             // parent.
-            int parent_idxs[2] = {-1, -1};
-            for (int j=0; j<2; j++) {
-
-                do {
-                    // inverse fitness is used so that an individual with a 
-                    // value of fitness closer to 0 is more likely to be 
-                    // selected
-                    double rand_selection = total_inverse_fitness 
-                                            * ((double)rand()/RAND_MAX);
-                    double fitness_cnt = 0.0;
-                    for (int k=0; k<POP_SIZE; k++) {
-                        parent_idxs[j] = k;
-                        fitness_cnt += 1.0/(double)population[i].fitness;
-                        if (fitness_cnt >= rand_selection) 
-                            break;
-                    }
-                } while (j == 1 && parent_idxs[0] == parent_idxs[1]);
-                // this makes sure the second parent idx is not the same as the
-                // first
-
-            } /* END SELECTION */
-
-            /*
+            int parent_idxs[2];
+            roulette_wheel_selection(population, 
+                                     parent_idxs, 
+                                     total_inverse_fitness
+                                    );
+            
             printf("selected parents %d and %d.\n",
                    parent_idxs[0],
                    parent_idxs[1]
                   );
-            */
+            
+            
 
             // CROSSOVER:
             // With probability CROSSOVER_PROB (the "crossover probability" or 
