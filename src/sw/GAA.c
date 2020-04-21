@@ -101,6 +101,13 @@ int main(int argc, char** argv) {
 
     // evolutionary loop
     for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
+
+        if (gen == 0)
+            printf("Starting GA for %d generations...\n", NUM_OF_GENERATIONS);
+        else if (gen > 0 && gen%100==0) {
+            printf("\r%d generations complete...", gen);
+            fflush(stdout);
+        }
         
         // initialize child population
         Individual* children = malloc(POP_SIZE * sizeof(Individual));
@@ -314,6 +321,7 @@ int main(int argc, char** argv) {
         free(children);
 
     } // end of evolution loop
+    printf("\n");
 
     /*
     printf("All individuals:\n");
@@ -337,11 +345,29 @@ int main(int argc, char** argv) {
         }
     }
     printf("Most fit individual: ");
+    int p0_cnt = 0;
+    int p1_cnt = 0;
     for (int i=0; i<graph->v; i++) {
+        if (getbit(population[min_idx].partition, i) == 0)
+            p0_cnt++;
+        else
+            p1_cnt++;
+
         printf("%d", getbit(population[min_idx].partition, i));        
     }
     printf("\n");
+    int external_cost = 0;
+    for (int i=0; i<graph->e; i++) {
+        if (getbit(population[min_idx].partition, (graph->edges)[i]->n1) !=
+            getbit(population[min_idx].partition, (graph->edges)[i]->n2)   ) {
+            
+            external_cost += (graph->edges)[i]->weight;
+        }
+    }
     printf("\tFitness = %d\n", population[min_idx].fitness);
+    printf("\tNumber of nodes in partition 0: %d\n", p0_cnt);
+    printf("\t                             1: %d\n", p1_cnt);
+    printf("\tTotal external cost: %d\n", external_cost);
 
     // free population
     for (int i=0; i<POP_SIZE; i++) {
