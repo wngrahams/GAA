@@ -136,13 +136,12 @@ int main(int argc, char** argv) {
                                      total_inverse_fitness
                                     );
             
-            printf("selected parents %d and %d.\n",
+            /*printf("selected parents %d and %d.\n",
                    parent_idxs[0],
                    parent_idxs[1]
                   );
+            */
             
-            
-
             // CROSSOVER:
             // With probability CROSSOVER_PROB (the "crossover probability" or 
             // "crossover rate"), cross over the pair at a randomly chosen 
