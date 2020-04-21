@@ -295,11 +295,13 @@ int main(int argc, char** argv) {
         // Replace the current population with the new population
         // TODO: instead of making deep copies, freeing the children, and then
         // reallocating, just move the pointers around
+        total_inverse_fitness = 0;
         for (int i=0; i<POP_SIZE; i++) {
             for (int j=0; j<RESERVE_BITS(graph->v); j++) {
                 population[i].partition[j] = children[i].partition[j];
             }
             population[i].fitness = children[i].fitness;
+            total_inverse_fitness += 1.0/(double)population[i].fitness;
         }
 
         // TODO:
