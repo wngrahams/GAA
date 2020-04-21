@@ -353,7 +353,7 @@ int main(int argc, char** argv) {
         else
             p1_cnt++;
 
-        printf("%d", getbit(population[min_idx].partition, i));        
+        //printf("%d", getbit(population[min_idx].partition, i));        
     }
     printf("\n");
     int external_cost = 0;
