@@ -12,6 +12,7 @@
 #include <time.h>    // time
 
 #include "bitarray.h"
+#include "crossover.h"
 #include "GAA.h"
 #include "ga-params.h"
 #include "ga-utils.h"
@@ -144,105 +145,14 @@ int main(int argc, char** argv) {
             */
             
             // CROSSOVER:
-            // With probability CROSSOVER_PROB (the "crossover probability" or 
-            // "crossover rate"), cross over the pair at a randomly chosen 
-            // point (chosen with uniform probability) (TODO) to form two 
-            // offspring. If no crossover takes place, form two offspring that 
-            // are exact copies of their respective parents.
+            single_point_crossover(population, 
+                                   parent_idxs, 
+                                   graph->v,
+                                   &(children[ i ]),
+                                   &(children[i+1])
+                                  );
 
-            double crossover_decision = (double)rand()/RAND_MAX;
-            if (crossover_decision < CROSSOVER_PROB) {
-
-                //printf("Performing crossover... ");
-
-                // single point crossover -- TODO: change to multiple point, 
-                //     where crossover rate for a pair of parents is the number
-                //     of points at which a crossover takes place.
-
-                // choose the bit at which to crossover: (TODO better random)
-                // doesn't pick bit 0 because that is the same as no crossover
-                int crossover_point = (rand()%(graph->v-1)) + 1;  // (0, graph->v)
-
-                /*
-                printf("Crossover point = %d\n", crossover_point);
-
-                printf("\tParents: ");
-                for( int j=0; j<graph->v; j++) {
-                    printf("%d", getbit(population[parent_idxs[0]].partition, j));
-                }
-                printf(", ");
-                for( int j=0; j<graph->v; j++) {
-                    printf("%d", getbit(population[parent_idxs[1]].partition, j));
-                }
-                printf("\n");
-                */
-
-                // fill in the non-crossover part of the bitarray as a copy of 
-                // the parents:
-                for (int bit_to_copy=0;
-                         bit_to_copy<crossover_point;
-                         bit_to_copy++) {
-                    
-                    putbit(children[i].partition,
-                           bit_to_copy,
-                           getbit(population[parent_idxs[0]].partition, 
-                                  bit_to_copy
-                                 )
-                          );
-                    putbit(children[i+1].partition,
-                           bit_to_copy,
-                           getbit(population[parent_idxs[1]].partition, 
-                                  bit_to_copy
-                                 )
-                          );
-                }
-
-
-                // do the crossover:
-                for (int bit_to_swap=crossover_point; 
-                         bit_to_swap<graph->v; 
-                         bit_to_swap++) {
-
-                    putbit(children[i].partition, 
-                           bit_to_swap, 
-                           getbit(population[parent_idxs[1]].partition, 
-                                  bit_to_swap
-                                 )
-                          );
-                    putbit(children[i+1].partition,
-                           bit_to_swap,
-                           getbit(population[parent_idxs[0]].partition, 
-                                  bit_to_swap
-                                 )
-                          );
-                }
-
-                /*
-                printf("\tChildren: ");
-                for (int j=0; j<graph->v; j++) {
-                    printf("%d", getbit(children[i].partition, j));
-                }
-                printf(", ");
-                for (int j=0; j<graph->v; j++) {
-                    printf("%d", getbit(children[i+1].partition, j));
-                }
-                printf("\n");
-                */
-
-            }
-            else {
-
-                //printf("No crossover.. children will be copies of parents.\n");
-                // the two children are exact copies of the parents
-                for (int j=0; j<RESERVE_BITS(graph->v); j++) {
-                    children[ i ].partition[j] = 
-                            population[parent_idxs[0]].partition[j];
-                    children[i+1].partition[j] = 
-                            population[parent_idxs[1]].partition[j];
-                }       
-
-            } /* END CROSSOVER */
-
+              
             // MUTATION:
             // Mutate the two offspring at each locus with probability 
             // MUTATION_RATE (the mutation probability or mutation rate)
