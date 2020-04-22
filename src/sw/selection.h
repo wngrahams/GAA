@@ -45,5 +45,39 @@ static inline void roulette_wheel_selection(Individual* pop,
     }
 }
 
+/*
+ * Tournament Selection: Two individuals are chosen at random from the 
+ * population. A random number r is then chosen between 0 and 1. If r < k 
+ * (where k is a parameter, for example 0.75), the fitter of the two 
+ * individuals is selected to be a parent; otherwise the less fit individual 
+ * is selected. The two are then returned to the original population and can 
+ * be selected again.
+ */
+static inline int tournament_selection(Individual* pop) {
+    
+    int parent1_idx = rand() % POP_SIZE;
+    int parent2_idx = -1;
+    do {
+        parent2_idx = rand() % POP_SIZE;
+    } while (parent2_idx == parent1_idx);  // ensures the parents are diffent
+                                           // individuals
+                                           
+    double r = (double)rand()/RAND_MAX;
+    if (r < TOURNAMENT_SELECT_PROB) {
+        // select fitter individual (individual with lower fitness score)
+        if (pop[parent1_idx].fitness < pop[parent2_idx].fitness)
+            return parent1_idx;
+        else
+            return parent2_idx;
+    }
+    else {
+        // select less fit individual (individual with higher fitness score)_
+        if (pop[parent1_idx].fitness < pop[parent2_idx].fitness)
+            return parent2_idx;
+        else
+            return parent1_idx;
+    }
+}
+
 #endif /* _SELECTION_H_ */
 
