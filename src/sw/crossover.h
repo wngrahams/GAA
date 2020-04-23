@@ -186,5 +186,44 @@ static void two_point_crossover(Individual* pop,
 } /* END Two Point Crossover */
 
 
+/*
+ * Paramaterized Uniform Crossover: An exchange happens at each bit position
+ * with probability PUC_PROB
+ */
+static void parameterized_uniform_crossover(Individual* pop,
+                                            int parent_idxs[],
+                                            int num_nodes,
+                                            Individual* child1,
+                                            Individual* child2) {
+                                           
+    for (int bit=0; bit<num_nodes; bit++) {
+        int crossover_decision = urandint(100);
+        if (crossover_decision < PUC_PROB*100) {
+            // exchange bits:
+            putbit(child1->partition, 
+                   bit, 
+                   getbit(pop[parent_idxs[1]].partition, bit)
+                  );
+            putbit(child2->partition,
+                   bit,
+                   getbit(pop[parent_idxs[0]].partition, bit)
+                  );
+
+        }
+        else {
+            // just copy the bit to the respective child:
+            putbit(child1->partition,
+                   bit,
+                   getbit(pop[parent_idxs[0]].partition, bit)
+                  );
+            putbit(child2->partition,
+                   bit,
+                   getbit(pop[parent_idxs[1]].partition, bit)
+                  );
+        }
+    }
+}
+
+
 #endif /* _CROSSOVER_H_ */ 
 
