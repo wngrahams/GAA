@@ -152,13 +152,14 @@ int main(int argc, char** argv) {
                                    &(children[ i ]),
                                    &(children[i+1])
                                   );*/
-            /*
+            /*            
             two_point_crossover(population,
                                 parent_idxs,
                                 graph->v,
                                 &(children[ i ]),
                                 &(children[i+1])
                                );*/
+            
             parameterized_uniform_crossover(population,
                                             parent_idxs,
                                             graph->v,
