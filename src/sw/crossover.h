@@ -9,6 +9,17 @@
 
 #include "bitarray.h"
 #include "ga-params.h"
+#include "ga-utils.h"
+
+
+/* Returns a crossover position chosen from a uniform random distribution 
+ * between 0 and num_nodes (exlusive)
+ */
+static inline int _get_crossover_position(int num_nodes) {
+    //return (rand()%(num_nodes-1)) + 1;
+    return urandint(num_nodes-1) + 1;
+}
+
 
 /*
  * Single Point Crossover: With probabilty SP_CROSSOVER_PROB, cross over the
@@ -16,20 +27,21 @@
  * probability) to form two offspring. If no crossover takes place, form two
  * offspring  that are exact copies of their respective parents.
  */
-static inline void single_point_crossover(Individual* pop,
-                                          int parent_idxs[],
-										  int num_nodes,
-                                          Individual* child1,
-                                          Individual* child2) {
+static void single_point_crossover(Individual* pop,
+                                   int parent_idxs[],
+						  		   int num_nodes,
+                                   Individual* child1,
+                                   Individual* child2) {
 
     double crossover_decision = (double)rand()/RAND_MAX;
     if (crossover_decision < CROSSOVER_PROB) {
 
         //printf("Performing crossover... ");
 
-        // choose the bit at which to crossover: (TODO better random)
+        // choose the bit at which to crossover:
         // doesn't pick bit 0 because that is the same as no crossover
-        int crossover_point = (rand()%(num_nodes-1)) + 1;  // (0, num_nodes)
+        int crossover_point = _get_crossover_position(num_nodes);  
+        // chooses a point between (0, num_nodes) exclusive
 
         /*
         printf("Crossover point = %d\n", crossover_point);
@@ -96,7 +108,83 @@ static inline void single_point_crossover(Individual* pop,
         }       
 
     }
-}
+} /* END Single Point Crossover */
+
+
+/*
+ * Two Point Crossover: With probabilty SP_CROSSOVER_PROB, cross over the
+ * pair of individuals at two randomly chosen point (TODO: chosen with uniform
+ * probability) to form two offspring. If no crossover takes place, form two
+ * offspring  that are exact copies of their respective parents.
+ */
+static void two_point_crossover(Individual* pop,
+                                int parent_idxs[],
+                                int num_nodes,
+                                Individual* child1,
+                                Individual* child2) {
+
+    double crossover_decision = (double)rand()/RAND_MAX;
+    if (crossover_decision < CROSSOVER_PROB) {
+
+        int pos1 = _get_crossover_position(num_nodes);
+        int pos2 = _get_crossover_position(num_nodes);
+
+        // fill in the non-crossover part of the bitarray as a copy of 
+        // the parents:
+        for (int bit_to_copy=0; bit_to_copy<MIN(pos1,pos2); bit_to_copy++) {
+                    
+            putbit(child1->partition,
+                   bit_to_copy,
+                   getbit(pop[parent_idxs[0]].partition, bit_to_copy)
+                  );
+            putbit(child2->partition,
+                   bit_to_copy,
+                   getbit(pop[parent_idxs[1]].partition, bit_to_copy)
+                  );
+        }
+
+        // do the crossover between the two points:
+        for (int bit_to_swap=MIN(pos1,pos2); 
+			 bit_to_swap<MAX(pos1,pos2); 
+             bit_to_swap++) {
+
+            putbit(child1->partition, 
+                   bit_to_swap, 
+                   getbit(pop[parent_idxs[1]].partition, bit_to_swap)
+                  );
+            putbit(child2->partition,
+                   bit_to_swap,
+                   getbit(pop[parent_idxs[0]].partition, bit_to_swap)
+                  );
+        }
+
+        // fill in the rest of the bitarray as a copy of the parents
+        for (int bit_to_copy=MAX(pos1,pos2); 
+             bit_to_copy<num_nodes; 
+             bit_to_copy++) {
+            
+            putbit(child1->partition,
+                   bit_to_copy,
+                   getbit(pop[parent_idxs[0]].partition, bit_to_copy)
+                  );
+            putbit(child2->partition,
+                   bit_to_copy,
+                   getbit(pop[parent_idxs[1]].partition, bit_to_copy)
+                  );
+        }
+    }
+    else {
+
+        //printf("No crossover.. children will be copies of parents.\n");
+        // the two children are exact copies of the parents
+        for (int j=0; j<RESERVE_BITS(num_nodes); j++) {
+             child1->partition[j] = pop[parent_idxs[0]].partition[j];
+             child2->partition[j] = pop[parent_idxs[1]].partition[j];
+        }       
+
+    }
+} /* END Two Point Crossover */
+
 
 #endif /* _CROSSOVER_H_ */ 
 

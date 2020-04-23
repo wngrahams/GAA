@@ -145,13 +145,19 @@ int main(int argc, char** argv) {
             */
             
             // CROSSOVER:
+            /*
             single_point_crossover(population, 
                                    parent_idxs, 
                                    graph->v,
                                    &(children[ i ]),
                                    &(children[i+1])
-                                  );
-
+                                  );*/
+            two_point_crossover(population,
+                                parent_idxs,
+                                graph->v,
+                                &(children[ i ]),
+                                &(children[i+1])
+                               );
               
             // MUTATION:
             // Mutate the two offspring at each locus with probability 
