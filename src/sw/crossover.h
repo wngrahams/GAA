@@ -27,11 +27,11 @@ static inline int _get_crossover_position(int num_nodes) {
  * probability) to form two offspring. If no crossover takes place, form two
  * offspring  that are exact copies of their respective parents.
  */
-static void single_point_crossover(Individual* pop,
-                                   int parent_idxs[],
-						  		   int num_nodes,
-                                   Individual* child1,
-                                   Individual* child2) {
+static inline void single_point_crossover(Individual* pop,
+                                          int parent_idxs[],
+						  		          int num_nodes,
+                                          Individual* child1,
+                                          Individual* child2) {
 
     double crossover_decision = (double)rand()/RAND_MAX;
     if (crossover_decision < CROSSOVER_PROB) {
@@ -117,11 +117,11 @@ static void single_point_crossover(Individual* pop,
  * probability) to form two offspring. If no crossover takes place, form two
  * offspring  that are exact copies of their respective parents.
  */
-static void two_point_crossover(Individual* pop,
-                                int parent_idxs[],
-                                int num_nodes,
-                                Individual* child1,
-                                Individual* child2) {
+static inline void two_point_crossover(Individual* pop,
+                                       int parent_idxs[],
+                                       int num_nodes,
+                                       Individual* child1,
+                                       Individual* child2) {
 
     double crossover_decision = (double)rand()/RAND_MAX;
     if (crossover_decision < CROSSOVER_PROB) {
@@ -190,11 +190,11 @@ static void two_point_crossover(Individual* pop,
  * Paramaterized Uniform Crossover: An exchange happens at each bit position
  * with probability PUC_PROB
  */
-static void parameterized_uniform_crossover(Individual* pop,
-                                            int parent_idxs[],
-                                            int num_nodes,
-                                            Individual* child1,
-                                            Individual* child2) {
+static inline void parameterized_uniform_crossover(Individual* pop,
+                                                   int parent_idxs[],
+                                                   int num_nodes,
+                                                   Individual* child1,
+                                                   Individual* child2) {
                                            
     for (int bit=0; bit<num_nodes; bit++) {
         int crossover_decision = urandint(100);
