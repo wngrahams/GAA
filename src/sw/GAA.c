@@ -19,8 +19,54 @@
 #include "graph-parser.h"
 #include "selection.h"
 
+#include "vga_ball.h"
+
+int vga_ball_fd;
 
 int main(int argc, char** argv) {
+     
+    // test hardware
+      vga_ball_arg_t vla;
+  static const char filename[] = "/dev/vga_ball";
+  int x_dir = 1;
+  int y_dir = 1;
+
+  static const vga_ball_color_t colors[] = {
+    { 0xff, 0x00, 0x00 }, /* Red */
+    { 0x00, 0xff, 0x00 }, /* Green */
+    { 0x00, 0x00, 0xff }, /* Blue */
+    { 0xff, 0xff, 0x00 }, /* Yellow */
+    { 0x00, 0xff, 0xff }, /* Cyan */
+    { 0xff, 0x00, 0xff }, /* Magenta */
+    { 0x80, 0x80, 0x80 }, /* Gray */
+    { 0x00, 0x00, 0x00 }, /* Black */
+    { 0xff, 0xff, 0xff }  /* White */
+  };
+  static const vga_ball_position_t initial_position = { MIN_X , MIN_Y };
+
+  vga_ball_position_t current_position = {.x = MIN_X, .y = MIN_Y};
+
+  printf("VGA ball Userspace program started\n");
+
+  if ( (vga_ball_fd = open(filename, O_RDWR)) == -1) {
+    fprintf(stderr, "could not open %s\n", filename);
+    return -1;
+  }
+
+  printf("initial state: ");
+  print_background_color();
+  
+  for (i = 0 ; i < 24 ; i++) {
+    set_background_color(&colors[i % COLORS ]);
+    print_background_color();
+    usleep(400000);
+  }
+    return 0;
+    // end test
+
+
+
+
 
     Graph* graph;
  

@@ -1,28 +1,30 @@
-CC  = gcc
-CXX = g++
+ifneq (${KERNELRELEASE},)
 
-INCLUDES =
+# KERNELRELEASE defined: we are being compiled as part of the Kernel
+        obj-m := GAA.o
 
-CFLAGS   = -O0 -g -Wall $(INCLUDES)
-CXXFLAGS = -O0 -g -Wall -std=c++11 $(INCLUDES)
+else
 
-LDFLAGS = -g  
-LDLIBS  = 
+# We are being compiled as a module: use the Kernel build system
 
-executables = GAA
-objects = GAA.o graph-parser.o
+	KERNEL_SOURCE := /usr/src/linux-headers-$(shell uname -r)
+        PWD := $(shell pwd)
 
-.PHONY: default
-default: $(executables)
+default: module GAA
 
-$(executables): graph-parser.o
+module:
+	${MAKE} -C ${KERNEL_SOURCE} SUBDIRS=${PWD} modules
 
-$(objects): ga-params.h ga-utils.h bitarray.h graph.h selection.h crossover.h
-
-.PHONY: clean
 clean:
-	rm -f *~ a.out core $(objects) $(executables)
+	${MAKE} -C ${KERNEL_SOURCE} SUBDIRS=${PWD} clean
+	${RM} GAA
 
-.PHONY: all
-all: clean default
+TARFILES = Makefile README vga_ball.h GAA.h bitarray.h crossover.h ga-params.h ga-utils.h graph-parser.h graph.h selection.h graph-parser.c GAA.c
+TARFILE = lab3-sw.tar.gz
+.PHONY : tar
+tar : $(TARFILE)
 
+$(TARFILE) : $(TARFILES)
+	tar zcfC $(TARFILE) .. $(TARFILES:%=lab3-sw/%)
+
+endif 
