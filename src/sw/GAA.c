@@ -105,10 +105,16 @@ int main(int argc, char** argv) {
     // evolutionary loop
     for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
 
+        double diversity = 0;
+
         if (gen == 0)
             printf("Starting GA for %d generations...\n", NUM_OF_GENERATIONS);
-        else if (gen > 0 && gen%100==0) {
-            printf("\r%d generations complete...", gen);
+        else if (gen%100==0) {
+            diversity = calc_diversity(population, graph->v);
+            printf("\r%d generations complete... Diversity=%.4f", 
+                   gen, 
+                   diversity
+                  );
             fflush(stdout);
         }
         
@@ -301,6 +307,52 @@ cleanup_graph:
     return 0;
 }
 
+
+/*
+ * Calculates the diversity of the population by finding the hamming distance
+ * between each individual's partition. O(POP_SIZE^2) runtime
+ * The return value is the average percentage of different bits between any 
+ * two given individuals in the population.
+ */
+double calc_diversity(Individual* pop, int num_nodes) {
+    int hdist;
+    double diversity = 0;
+
+    for (int i=0; i<POP_SIZE; i++) {
+        for (int j=0; j<POP_SIZE; j++) {
+
+            hdist = 0;
+            if (i != j) {
+                /*
+                printf("Individual %d:\n", i);
+                printf("\tpartition: ");
+                for( int m=0; m<num_nodes; m++) {
+                    printf("%d", getbit(pop[i].partition, m));
+                }
+                printf("\n");
+                printf("Individual %d:\n", j);
+                printf("\tpartition: ");
+                for( int m=0; m<num_nodes; m++) {
+                    printf("%d", getbit(pop[j].partition, m));
+                }
+                printf("\n");
+                */
+
+                for (int k=0; k<RESERVE_BITS(num_nodes); k++) {
+                    hdist += hamming_distance(pop[i].partition[k],
+                                              pop[j].partition[k]
+                                             );
+                }
+                //printf("hamming distance: %d\n", hdist);
+            }
+
+            diversity += (double)hdist/num_nodes;
+        }
+    }
+
+    return diversity/(POP_SIZE*(POP_SIZE-1));
+}
+
 /*
  * Calculates fitness of an individual with respect to the associated graph.
  * An individual with a better partition will have a fitness value closer to 0.
@@ -348,6 +400,7 @@ int calc_fitness(Graph* graph, Individual* indiv) {
     return fitness;
 
 }
+
 
 /*
  * Shuffes the array of integers passed to the function

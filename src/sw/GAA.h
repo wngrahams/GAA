@@ -11,6 +11,7 @@
 #include "ga-params.h"
 #include "graph.h"
 
+double calc_diversity(Individual*, int);
 int calc_fitness(Graph*, Individual*);
 void shuffle(int*, int);
 

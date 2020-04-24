@@ -63,6 +63,34 @@ static inline int8_t check_malloc_err(const void *ptr) {
 static inline int get_sign(int x) { return (x > 0) - (x < 0); }
 
 
+/*
+ * function to calculate the hamming distance between two ints
+ */
+#ifdef __GNUC__
+#define hamming_distance(x,y) _popcount_hamming_distance((x),(y))
+#else
+#define hamming_distance(x,y) _wegner_hamming_distance((x),(y))
+#endif
+static inline int _popcount_hamming_distance(unsigned x, unsigned y) {
+    return __builtin_popcount(x ^ y);
+}
+static inline int _wegner_hamming_distance(unsigned x, unsigned y) {
+    int dist = 0;
+    
+    // Count the number of bits set
+    for (unsigned val = x ^ y; val > 0; val = val >> 1)
+    {
+        // If A bit is set, so increment the count
+        if (val & 1)
+            dist++;
+        // Clear (delete) val's lowest-order bit
+    }
+
+    // Return the number of differing bits
+    return dist;
+}
+
+
 /* Returns an integer in the range [0, n) from a uniform distribution.
  *
  * Uses rand(), and so is affected-by/affects the same seed.
