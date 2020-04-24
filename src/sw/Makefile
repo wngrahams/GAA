@@ -3,7 +3,7 @@ CXX = g++
 
 INCLUDES =
 
-CFLAGS   = -O0 -g -Wall $(INCLUDES)
+CFLAGS   = -O0 -g -Wall -std=c99   $(INCLUDES)
 CXXFLAGS = -O0 -g -Wall -std=c++11 $(INCLUDES)
 
 LDFLAGS = -g  
