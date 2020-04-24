@@ -14,7 +14,7 @@
 #define EL    0
 #define WEL   1
 #define DOT   2
-#define GZ    3
+#define GV    3
 #define GRAPH 4
 
 int parse_graph_from_file(char*, Graph*);
