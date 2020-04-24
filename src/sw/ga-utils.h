@@ -41,6 +41,7 @@ extern "C" {
 
 static inline int int_exit(int x) { exit(x); return x; }
 
+
 /*
  * This function checks if malloc() returned NULL. If it did, the program
  * prints an error message. The function returns 1 on success and 0 on failure
@@ -54,11 +55,65 @@ static inline int8_t check_malloc_err(const void *ptr) {
     return 1;
 }
 
+
 /*
  * gets the sign of an integer with no branch instructions
  * returns -1, 0, or 1
  */
 static inline int get_sign(int x) { return (x > 0) - (x < 0); }
+
+
+/*
+ * function to calculate the hamming distance between two ints
+ */
+static inline int hamming_distance(unsigned x, unsigned y) {
+    
+#ifdef __GNUC__
+    return __builtin_popcount(x ^ y);
+#else
+    int dist = 0;
+    
+    // Count the number of bits set
+    for (unsigned val = x ^ y; val > 0; val = val >> 1)
+    {
+        // If A bit is set, so increment the count
+        if (val & 1)
+            dist++;
+        // Clear (delete) val's lowest-order bit
+    }
+
+    // Return the number of differing bits
+    return dist;
+#endif
+}
+
+
+/* Returns an integer in the range [0, n) from a uniform distribution.
+ *
+ * Uses rand(), and so is affected-by/affects the same seed.
+ */
+static inline int urandint(int n) {
+  if ((n - 1) == RAND_MAX) {
+    return rand();
+  } else {
+    // Supporting larger values for n would requires an even more
+    // elaborate implementation that combines multiple calls to rand()
+    assert (n <= RAND_MAX);
+
+    // Chop off all of the values that would cause skew...
+    int end = RAND_MAX / n; // truncate skew
+    assert (end > 0);
+    end *= n;
+
+    // ... and ignore results from rand() that fall above that limit.
+    // (Worst case the loop condition should succeed 50% of the time,
+    // so we can expect to bail out of this loop pretty quickly.)
+    int r;
+    while ((r = rand()) >= end);
+
+    return r % n;
+  }
+}
 
 
 #ifdef __cplusplus

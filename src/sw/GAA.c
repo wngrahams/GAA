@@ -12,6 +12,7 @@
 #include <time.h>    // time
 
 #include "bitarray.h"
+#include "crossover.h"
 #include "GAA.h"
 #include "ga-params.h"
 #include "ga-utils.h"
@@ -104,10 +105,16 @@ int main(int argc, char** argv) {
     // evolutionary loop
     for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
 
+        double diversity = 0;
+
         if (gen == 0)
             printf("Starting GA for %d generations...\n", NUM_OF_GENERATIONS);
-        else if (gen > 0 && gen%100==0) {
-            printf("\r%d generations complete...", gen);
+        else if (gen%100==0) {
+            diversity = calc_diversity(population, graph->v);
+            printf("\r%d generations complete... Diversity=%.4f", 
+                   gen, 
+                   diversity
+                  );
             fflush(stdout);
         }
         
@@ -144,105 +151,28 @@ int main(int argc, char** argv) {
             */
             
             // CROSSOVER:
-            // With probability CROSSOVER_PROB (the "crossover probability" or 
-            // "crossover rate"), cross over the pair at a randomly chosen 
-            // point (chosen with uniform probability) (TODO) to form two 
-            // offspring. If no crossover takes place, form two offspring that 
-            // are exact copies of their respective parents.
-
-            double crossover_decision = (double)rand()/RAND_MAX;
-            if (crossover_decision < CROSSOVER_PROB) {
-
-                //printf("Performing crossover... ");
-
-                // single point crossover -- TODO: change to multiple point, 
-                //     where crossover rate for a pair of parents is the number
-                //     of points at which a crossover takes place.
-
-                // choose the bit at which to crossover: (TODO better random)
-                // doesn't pick bit 0 because that is the same as no crossover
-                int crossover_point = (rand()%(graph->v-1)) + 1;  // (0, graph->v)
-
-                /*
-                printf("Crossover point = %d\n", crossover_point);
-
-                printf("\tParents: ");
-                for( int j=0; j<graph->v; j++) {
-                    printf("%d", getbit(population[parent_idxs[0]].partition, j));
-                }
-                printf(", ");
-                for( int j=0; j<graph->v; j++) {
-                    printf("%d", getbit(population[parent_idxs[1]].partition, j));
-                }
-                printf("\n");
-                */
-
-                // fill in the non-crossover part of the bitarray as a copy of 
-                // the parents:
-                for (int bit_to_copy=0;
-                         bit_to_copy<crossover_point;
-                         bit_to_copy++) {
-                    
-                    putbit(children[i].partition,
-                           bit_to_copy,
-                           getbit(population[parent_idxs[0]].partition, 
-                                  bit_to_copy
-                                 )
-                          );
-                    putbit(children[i+1].partition,
-                           bit_to_copy,
-                           getbit(population[parent_idxs[1]].partition, 
-                                  bit_to_copy
-                                 )
-                          );
-                }
-
-
-                // do the crossover:
-                for (int bit_to_swap=crossover_point; 
-                         bit_to_swap<graph->v; 
-                         bit_to_swap++) {
-
-                    putbit(children[i].partition, 
-                           bit_to_swap, 
-                           getbit(population[parent_idxs[1]].partition, 
-                                  bit_to_swap
-                                 )
-                          );
-                    putbit(children[i+1].partition,
-                           bit_to_swap,
-                           getbit(population[parent_idxs[0]].partition, 
-                                  bit_to_swap
-                                 )
-                          );
-                }
-
-                /*
-                printf("\tChildren: ");
-                for (int j=0; j<graph->v; j++) {
-                    printf("%d", getbit(children[i].partition, j));
-                }
-                printf(", ");
-                for (int j=0; j<graph->v; j++) {
-                    printf("%d", getbit(children[i+1].partition, j));
-                }
-                printf("\n");
-                */
-
-            }
-            else {
-
-                //printf("No crossover.. children will be copies of parents.\n");
-                // the two children are exact copies of the parents
-                for (int j=0; j<RESERVE_BITS(graph->v); j++) {
-                    children[ i ].partition[j] = 
-                            population[parent_idxs[0]].partition[j];
-                    children[i+1].partition[j] = 
-                            population[parent_idxs[1]].partition[j];
-                }       
-
-            } /* END CROSSOVER */
-
+            /*
+            single_point_crossover(population, 
+                                   parent_idxs, 
+                                   graph->v,
+                                   &(children[ i ]),
+                                   &(children[i+1])
+                                  );*/
+            /*            
+            two_point_crossover(population,
+                                parent_idxs,
+                                graph->v,
+                                &(children[ i ]),
+                                &(children[i+1])
+                               );*/
+            
+            parameterized_uniform_crossover(population,
+                                            parent_idxs,
+                                            graph->v,
+                                            &(children[ i ]),
+                                            &(children[i+1])
+                                           );
+              
             // MUTATION:
             // Mutate the two offspring at each locus with probability 
             // MUTATION_RATE (the mutation probability or mutation rate)
@@ -377,6 +307,52 @@ cleanup_graph:
     return 0;
 }
 
+
+/*
+ * Calculates the diversity of the population by finding the hamming distance
+ * between each individual's partition. O(POP_SIZE^2) runtime
+ * The return value is the average percentage of different bits between any 
+ * two given individuals in the population.
+ */
+double calc_diversity(Individual* pop, int num_nodes) {
+    int hdist;
+    double diversity = 0;
+
+    for (int i=0; i<POP_SIZE; i++) {
+        for (int j=0; j<POP_SIZE; j++) {
+
+            hdist = 0;
+            if (i != j) {
+                /*
+                printf("Individual %d:\n", i);
+                printf("\tpartition: ");
+                for( int m=0; m<num_nodes; m++) {
+                    printf("%d", getbit(pop[i].partition, m));
+                }
+                printf("\n");
+                printf("Individual %d:\n", j);
+                printf("\tpartition: ");
+                for( int m=0; m<num_nodes; m++) {
+                    printf("%d", getbit(pop[j].partition, m));
+                }
+                printf("\n");
+                */
+
+                for (int k=0; k<RESERVE_BITS(num_nodes); k++) {
+                    hdist += hamming_distance(pop[i].partition[k],
+                                              pop[j].partition[k]
+                                             );
+                }
+                //printf("hamming distance: %d\n", hdist);
+            }
+
+            diversity += (double)hdist/num_nodes;
+        }
+    }
+
+    return diversity/(POP_SIZE*(POP_SIZE-1));
+}
+
 /*
  * Calculates fitness of an individual with respect to the associated graph.
  * An individual with a better partition will have a fitness value closer to 0.
@@ -424,6 +400,7 @@ int calc_fitness(Graph* graph, Individual* indiv) {
     return fitness;
 
 }
+
 
 /*
  * Shuffes the array of integers passed to the function
