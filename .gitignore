@@ -55,6 +55,7 @@ dkms.conf
 # other stuff
 .DS_Store
 *.tar
+*.swp
 
 # hardware stuff
 .qsys_edit
