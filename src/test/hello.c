@@ -62,7 +62,7 @@ int main()
     return -1;
   }
 
-  set_input_values(&initial inputs);
+  set_input_values(&initial_inputs);
   out = print_output_value();
   assert(out == 0xFF);
 
@@ -70,7 +70,7 @@ int main()
     for (j = 0xFF; j >= 0x00; j--) {
         current_inputs.p1 = i;
         current_inputs.p2 = j;
-        set_input_values(current_inputs);
+        set_input_values(&current_inputs);
         out = print_output_value();
         usleep(500000);
     }
