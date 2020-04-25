@@ -4,7 +4,9 @@
  * test program to verify functionality of gaa_fitness device driver
  */
 
+#include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -32,7 +34,7 @@ uint8_t print_output_value() {
 }
 
 /* Set the inputs */
-void set_intput_values(const gaa_fitness_inputs_t *i)
+void set_input_values(const gaa_fitness_inputs_t *i)
 {
   gaa_fitness_arg_t gaa_arg;
   gaa_arg.inputs = *i;
@@ -51,7 +53,7 @@ int main()
   static const gaa_fitness_inputs_t initial_inputs = { 0x0F , 0xF0 };
 
   gaa_fitness_inputs_t current_inputs = {.p1 = initial_inputs.p1, 
-                                         .p2 = initial_intputs.p2};
+                                         .p2 = initial_inputs.p2};
 
   printf("GAA Fitness Userspace program started\n");
 
@@ -60,7 +62,7 @@ int main()
     return -1;
   }
 
-  set_input_values(&initial_initial inputs);
+  set_input_values(&initial inputs);
   out = print_output_value();
   assert(out == 0xFF);
 
