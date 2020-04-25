@@ -43,7 +43,7 @@ TARFILES = Makefile \
 	$(BOARD_INFO) \
 	ip/intr_capturer/intr_capturer.v \
 	ip/intr_capturer/intr_capturer_hw.tcl \
-	vga_ball.sv
+	gaa_fitness.sv
 
 TARFILE = lab3-hw.tar.gz
 
