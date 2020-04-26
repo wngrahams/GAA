@@ -66,14 +66,12 @@ int main()
   out = print_output_value();
   //assert(out == 0xFF);
 
-  for (i=0x00; i<=0xFF; i++) {
-    for (j = 0xFF; j >= 0x00; j--) {
-        current_inputs.p1 = i;
-        current_inputs.p2 = j;
-        set_input_values(&current_inputs);
-        out = print_output_value();
-        usleep(500000);
-    }
+  for (i=0x00, j=0xF0; i<=0xF0 && j>=0x00; i++, j--) {
+    current_inputs.p1 = i;
+    current_inputs.p2 = j;
+    set_input_values(&current_inputs);
+    out = print_output_value();
+    usleep(500000);
   }
 
   printf("GAA Fitness Userspace program terminating\n");
