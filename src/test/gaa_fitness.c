@@ -48,6 +48,11 @@ static void write_inputs(gaa_fitness_inputs_t *i) {
 	dev.inputs = *i;
 }
 
+static void read_outputs() {
+
+    dev.outputs.p1xorp2 = ioread8(P1XORP2(dev.virtbase));
+}
+
 /*
  * Handle ioctl() calls from userspace:
  * Read or write the segments on single digits.
@@ -68,6 +73,7 @@ static long gaa_fitness_ioctl(struct file *f,
 		break;
 
 	case GAA_FITNESS_READ_OUTPUTS:
+        read_outputs();
 	  	gaa_arg.outputs = dev.outputs;
 		if (copy_to_user((gaa_fitness_arg_t *) arg, &gaa_arg,
 				 sizeof(gaa_fitness_arg_t)))
