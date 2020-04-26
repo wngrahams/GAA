@@ -330,12 +330,27 @@ int main(int argc, char** argv) {
     total_time = (total_stop.tv_sec - total_start.tv_sec) + 
                  (total_stop.tv_nsec - total_start.tv_nsec)/1e9;
     printf("Timing info:\n");
-    printf("\tTotal elapsed time:      %.2f sec\n", total_time);
-    printf("\tTime spent in selection: %.2f sec\n", selection_time);
-    printf("\tTime spent in crossover: %.2f sec\n", crossover_time);
-    printf("\tTime spent in mutation:  %.2f sec\n", mutation_time);
-    printf("\tTime spent in fitness:   %.2f sec\n", fitness_time);
-    printf("\tTime spent in diversity: %.2f sec\n", diversity_time);
+    printf("\tTotal elapsed time:      %8.2f sec\n", total_time);
+    printf("\tTime spent in selection: %8.2f sec (%4.1f%%)\n", 
+           selection_time, 
+           (selection_time/total_time)*100
+          );
+    printf("\tTime spent in crossover: %8.2f sec (%4.1f%%)\n", 
+           crossover_time,
+           (crossover_time/total_time)*100
+          );
+    printf("\tTime spent in mutation:  %8.2f sec (%4.1f%%)\n", 
+           mutation_time,
+           (mutation_time/total_time)*100
+          );
+    printf("\tTime spent in fitness:   %8.2f sec (%4.1f%%)\n", 
+           fitness_time,
+           (fitness_time/total_time)*100
+          );
+    printf("\tTime spent in diversity: %8.2f sec (%4.1f%%)\n", 
+           diversity_time,
+           (diversity_time/total_time)*100
+          );
 
     // free population
     for (int i=0; i<POP_SIZE; i++) {
