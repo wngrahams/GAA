@@ -23,11 +23,25 @@
 int main(int argc, char** argv) {
 
     Graph* graph;
- 
+    struct timespec total_start, total_stop, 
+                    selection_start, selection_stop,
+                    crossover_start, crossover_stop,
+                    mutation_start, mutation_stop,
+                    fitness_start, fitness_stop,
+                    diversity_start, diversity_stop;
+    double total_time = 0;
+    double selection_time = 0;
+    double crossover_time = 0;
+    double mutation_time = 0;
+    double fitness_time = 0;
+    double diversity_time = 0;
+
     if (argc != 2) {
         fprintf(stderr, "%s\n", "usage: gaa <graph_file>");
         exit(1);
     }
+
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &total_start);
 
     // allocate memory for a graph struct
     graph = malloc(sizeof(Graph));
@@ -78,7 +92,12 @@ int main(int argc, char** argv) {
         
         // TODO: take fitness calculation out of loop so that hardware can do
         // do it all in parallel
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_start);
         population[i].fitness = calc_fitness(graph, &(population[i]));
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_stop);
+        fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec) + 
+                 (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
+
         total_inverse_fitness += 1.0/(double)population[i].fitness;
         
 
@@ -110,7 +129,11 @@ int main(int argc, char** argv) {
         if (gen == 0)
             printf("Starting GA for %d generations...\n", NUM_OF_GENERATIONS);
         else if (gen%100==0) {
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_start);
             diversity = calc_diversity(population, graph->v);
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_stop);
+            diversity_time += (diversity_stop.tv_sec - diversity_start.tv_sec) + 
+                 (diversity_stop.tv_nsec - diversity_start.tv_nsec)/1e9;
             printf("\r%d generations complete... Diversity=%.4f", 
                    gen, 
                    diversity
@@ -134,6 +157,7 @@ int main(int argc, char** argv) {
             // SELECTION:
             // Select a pair of parent chromosomes from the current population.
             int parent_idxs[2];
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &selection_start);
             /*
             roulette_wheel_selection(population, 
                                      parent_idxs, 
@@ -142,6 +166,10 @@ int main(int argc, char** argv) {
             */
             parent_idxs[0] = tournament_selection(population);
             parent_idxs[1] = tournament_selection(population);
+
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &selection_stop);
+            selection_time += (selection_stop.tv_sec - selection_start.tv_sec) + 
+                            (selection_stop.tv_nsec - selection_start.tv_nsec)/1e9;
             
             /*
             printf("selected parents %d and %d.\n",
@@ -151,6 +179,7 @@ int main(int argc, char** argv) {
             */
             
             // CROSSOVER:
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &crossover_start);
             /*
             single_point_crossover(population, 
                                    parent_idxs, 
@@ -172,12 +201,16 @@ int main(int argc, char** argv) {
                                             &(children[ i ]),
                                             &(children[i+1])
                                            );
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &crossover_stop);
+            crossover_time += (crossover_stop.tv_sec - crossover_start.tv_sec) + 
+                 (crossover_stop.tv_nsec - crossover_start.tv_nsec)/1e9;
               
             // MUTATION:
             // Mutate the two offspring at each locus with probability 
             // MUTATION_RATE (the mutation probability or mutation rate)
             
             //printf("Mutation...\n");
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &mutation_start);
             for (int childno=0; childno<2; childno++) {
                 
                 //printf("\tMutating child %d at bits: ", childno);
@@ -206,12 +239,19 @@ int main(int argc, char** argv) {
                 */
 
             } /* END MUTATION */
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &mutation_stop);
+            mutation_time += (mutation_stop.tv_sec - mutation_start.tv_sec) + 
+                 (mutation_stop.tv_nsec - mutation_start.tv_nsec)/1e9;
 
             // CALCULATE FITNESS OF NEW CHILDREN
             // TODO: move this outside of the loop so that the hardware can do
             // them all in parallel
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_start);
             children[ i ].fitness = calc_fitness(graph, &(children[ i ]));
             children[i+1].fitness = calc_fitness(graph, &(children[i+1]));
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_stop);
+            fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec) + 
+                 (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
             
         } /* END loop for one generation: SELECTION, CROSSOVER, MUTATION */
 
@@ -284,6 +324,18 @@ int main(int argc, char** argv) {
     printf("\tNumber of nodes in partition 0: %d\n", p0_cnt);
     printf("\t                             1: %d\n", p1_cnt);
     printf("\tTotal external cost: %d\n", external_cost);
+    printf("\n");
+
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &total_stop);
+    total_time = (total_stop.tv_sec - total_start.tv_sec) + 
+                 (total_stop.tv_nsec - total_start.tv_nsec)/1e9;
+    printf("Timing info:\n");
+    printf("\tTotal elapsed time:      %.2f sec\n", total_time);
+    printf("\tTime spent in selection: %.2f sec\n", selection_time);
+    printf("\tTime spent in crossover: %.2f sec\n", crossover_time);
+    printf("\tTime spent in mutation:  %.2f sec\n", mutation_time);
+    printf("\tTime spent in fitness:   %.2f sec\n", fitness_time);
+    printf("\tTime spent in diversity: %.2f sec\n", diversity_time);
 
     // free population
     for (int i=0; i<POP_SIZE; i++) {
