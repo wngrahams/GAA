@@ -48,7 +48,7 @@ static void write_inputs(gaa_fitness_inputs_t *i) {
 	dev.inputs = *i;
 }
 
-static void read_outputs() {
+static void read_outputs(void) {
 
     dev.outputs.p1xorp2 = ioread8(P1XORP2(dev.virtbase));
 }
