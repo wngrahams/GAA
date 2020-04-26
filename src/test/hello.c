@@ -27,7 +27,7 @@ uint8_t print_output_value() {
       perror("ioctl(GAA_FITNESS_READ_OUTPUTS) failed");
       return 0;
   }
-  printf("%d xor %d = %d\n",
+  printf("0x%X xor 0x%X = 0x%X\n",
 	 gaa_arg.inputs.p1, gaa_arg.inputs.p2, gaa_arg.outputs.p1xorp2);
 
   return gaa_arg.outputs.p1xorp2;
@@ -71,7 +71,7 @@ int main()
     current_inputs.p2 = j;
     set_input_values(&current_inputs);
     out = print_output_value();
-    usleep(500000);
+    //usleep(500000);
   }
 
   printf("GAA Fitness Userspace program terminating\n");
