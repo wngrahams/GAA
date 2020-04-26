@@ -54,4 +54,20 @@ dkms.conf
 
 # other stuff
 .DS_Store
+*.tar
+*.swp
+
+# hardware stuff
+.qsys_edit
+soc_system/*
+soc_system.sopcinfo
+c5_pin_model_dump.txt
+db/*
+hps_isw_handoff/*
+hps_sdram_p0_all_pins.txt
+incremental_db/*
+output_files/*
+soc_system.qpf
+soc_system.qsf
+soc_system.sdc
 
