@@ -64,7 +64,7 @@ int main()
 
   set_input_values(&initial_inputs);
   out = print_output_value();
-  assert(out == 0xFF);
+  //assert(out == 0xFF);
 
   for (i=0x00; i<=0xFF; i++) {
     for (j = 0xFF; j >= 0x00; j--) {
