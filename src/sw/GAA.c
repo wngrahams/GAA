@@ -270,6 +270,8 @@ int main(int argc, char** argv) {
                             += (double)indiv_fitness/archipelago[i].num_members;
                     member = member->next;
                 }
+                archipelago[i].num_members = member_cnt;
+                archipelago[i].avg_fitness = avg_fitness;
             }
             
             for (int i=0; i<NUM_ISLANDS; i++) {
