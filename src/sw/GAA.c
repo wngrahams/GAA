@@ -83,10 +83,8 @@ int main(int argc, char** argv) {
         }
 
         // create a random starting partition: 
-        // TODO: use a better random number generation method (ie for a
-        // more uniform distribution)
         for (int j=0; j<graph->v; j++) {
-            int rand_bit = rand() % 2;
+            int rand_bit = urandint(2);
             putbit(population[i].partition, j, rand_bit); 
         }
 
@@ -123,6 +121,71 @@ int main(int argc, char** argv) {
     printf("RAND_MAX: %d\n", RAND_MAX);
     */
 
+    // Initialize islands
+    Island* archipelago = malloc(NUM_ISLANDS * sizeof(Island));
+    CHECK_MALLOC_ERR(archipelago);
+    for (int i=0; i<NUM_ISLANDS; i++) {
+        archipelago[i].member_list = malloc(POP_SIZE * sizeof(List));
+        CHECK_MALLOC_ERR(archipelago[i].member_list);
+        initList(archipelago[i].member_list);
+
+        archipelago[i].migration_probs = malloc(NUM_ISLANDS * sizeof(double));
+        CHECK_MALLOC_ERR(archipelago[i].migration_probs);
+
+        archipelago[i].num_members = 0;
+    }
+
+    // assign initial migration probabilities
+    for (int i=0; i<NUM_ISLANDS; i++) {
+        for (int j=0; j<NUM_ISLANDS; j++) {
+            if (i!=j) {
+                archipelago[i].migration_probs[j] = PROB_ISLAND_MIGRATE;
+            }
+            else {
+                archipelago[i].migration_probs[j] = PROB_ISLAND_STAY;
+            }
+        }
+    }
+
+    // evenly distribute the population among the islands
+    for (int i=0; i<POP_SIZE; i++) {
+        int* idx_to_add = malloc(sizeof(int));
+        CHECK_MALLOC_ERR(idx_to_add);
+        *idx_to_add = i;
+        addBack(archipelago[i%NUM_ISLANDS].member_list, idx_to_add);
+        archipelago[i%NUM_ISLANDS].num_members += 1;
+    }
+
+    // initialize the average fitness of each island
+    for (int i=0; i<NUM_ISLANDS; i++) {
+        double avg_fitness = 0.0;
+        Lnode* member = (archipelago[i].member_list)->head;
+        for (int j=0; j<archipelago[i].num_members; j++) {
+
+            int indiv_fitness = population[*(int*)(member->data)].fitness;
+            avg_fitness += (double)indiv_fitness/archipelago[i].num_members;
+        
+            member = member->next;
+        }
+        archipelago[i].avg_fitness = avg_fitness;
+    }
+    /* END Initialize Islands */
+
+    printf("prob island migrate: %f\n", PROB_ISLAND_MIGRATE);
+    printf("population size: %d\n", POP_SIZE);
+    for (int i=0; i<NUM_ISLANDS; i++) {
+        printf("ISLAND %d:\n", i);
+        printf("\tMembers: (%d)\n", archipelago[i].num_members);
+        printf("\t\t");
+        Lnode* member = (archipelago[i].member_list)->head;
+        for (int j=0; j<archipelago[i].num_members; j++) {
+            printf("%d ", *(int*)(member->data));
+            member = member->next;
+        }
+        printf("\n");
+        printf("\tAverage fitness: %f\n", archipelago[i].avg_fitness);
+    }
+
     // evolutionary loop
     for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
 
@@ -130,7 +193,7 @@ int main(int argc, char** argv) {
 
         if (gen == 0)
             printf("Starting GA for %d generations...\n", NUM_OF_GENERATIONS);
-        else if (gen%100==0) {
+        else if (gen%25==0) {
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_start);
             diversity = calc_diversity(population, graph->v);
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_stop);
@@ -142,6 +205,31 @@ int main(int argc, char** argv) {
                   );
             fflush(stdout);
         }
+
+        // Migration
+        /*
+        if (NUM_ISLANDS > 1 && gen != 0 && gen%MIGRATION_PERIOD==0) {
+            // TODO: do a crossover etc before changing probabilities
+            for (int i=0; i<NUM_ISLANDS; i++) {
+                for (int j=0; j<archipelago[i].num_members; j++) {
+                    double migration_decicion = (double)rand()/RAND_MAX;
+                    double migration_prob_cnt = 0.0;
+                    int island_to_migrate = 0;
+                    for (island_to_migrate=0; 
+                         island_to_migrate<NUM_ISLANDS; 
+                         island_to_migrate++) {
+                        
+                        migration_prob_cnt += 
+                            archipelago[i].migration_prob_cnt[island_to_migrate];
+
+                        if (migration_prob_cnt >= migration_decicion) {
+                            break;
+                        }
+                    }
+                }
+            } 
+
+        } *//* END MIGRATION */
         
         // initialize child population
         Individual* children = malloc(POP_SIZE * sizeof(Individual));
@@ -353,6 +441,15 @@ int main(int argc, char** argv) {
            diversity_time,
            (diversity_time/total_time)*100
           );
+
+    // free islands
+    for (int i=0; i<NUM_ISLANDS; i++) {
+        traverseList(archipelago[i].member_list, &free);
+        removeAllNodes(archipelago[i].member_list);
+        free(archipelago[i].member_list);
+        free(archipelago[i].migration_probs);
+    }
+    free(archipelago);
 
     // free population
     for (int i=0; i<POP_SIZE; i++) {
