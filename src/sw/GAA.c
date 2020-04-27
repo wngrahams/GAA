@@ -122,6 +122,7 @@ int main(int argc, char** argv) {
     */
 
     // Initialize islands
+    /*
     Island* archipelago = malloc(NUM_ISLANDS * sizeof(Island));
     CHECK_MALLOC_ERR(archipelago);
     for (int i=0; i<NUM_ISLANDS; i++) {
@@ -169,8 +170,8 @@ int main(int argc, char** argv) {
         }
         archipelago[i].avg_fitness = avg_fitness;
     }
-    /* END Initialize Islands */
-
+    *//* END Initialize Islands */
+    /*
     printf("prob island migrate: %f\n", PROB_ISLAND_MIGRATE);
     printf("population size: %d\n", POP_SIZE);
     for (int i=0; i<NUM_ISLANDS; i++) {
@@ -184,7 +185,7 @@ int main(int argc, char** argv) {
         }
         printf("\n");
         printf("\tAverage fitness: %f\n", archipelago[i].avg_fitness);
-    }
+    }*/
 
     // evolutionary loop
     for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
@@ -199,7 +200,7 @@ int main(int argc, char** argv) {
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_stop);
             diversity_time += (diversity_stop.tv_sec - diversity_start.tv_sec) + 
                  (diversity_stop.tv_nsec - diversity_start.tv_nsec)/1e9;
-            printf("%d generations complete... Diversity=%.4f\n", 
+            printf("\r%d generations complete... Diversity=%.4f", 
                    gen, 
                    diversity
                   );
@@ -207,6 +208,7 @@ int main(int argc, char** argv) {
         }
 
         // Migration
+        /*
         if (NUM_ISLANDS > 1 && gen != 0 && gen%MIGRATION_PERIOD==0) {
 
             //List migration_list;
@@ -286,7 +288,7 @@ int main(int argc, char** argv) {
                 printf("\n");
                 printf("\tAverage fitness: %f\n", archipelago[i].avg_fitness);
             }
-        } /* END MIGRATION */
+        } *//* END MIGRATION */
         
         // initialize child population
         Individual* children = malloc(POP_SIZE * sizeof(Individual));
@@ -500,14 +502,14 @@ int main(int argc, char** argv) {
           );
 
     // free islands
-    for (int i=0; i<NUM_ISLANDS; i++) {
+    /*for (int i=0; i<NUM_ISLANDS; i++) {
         traverseList(archipelago[i].member_list, &free);
         removeAllNodes(archipelago[i].member_list);
         free(archipelago[i].member_list);
         free(archipelago[i].migration_probs);
     }
     free(archipelago);
-
+    */
     // free population
     for (int i=0; i<POP_SIZE; i++) {
         free(population[i].partition);
