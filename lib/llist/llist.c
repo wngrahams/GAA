@@ -42,6 +42,14 @@ int compareDouble(const void *data1, const void *data2)
 	return 1;
 }
 
+int compareInt(const void *data1, const void *data2)
+{
+    if (*(int *)data1 == *(int *)data2)
+	return 0;
+    else 
+	return 1;
+}
+
 struct Lnode *findNode(struct List *list, const void *dataSought,
 	int (*compar)(const void *, const void *))
 {

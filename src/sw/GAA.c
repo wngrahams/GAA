@@ -207,11 +207,17 @@ int main(int argc, char** argv) {
         }
 
         // Migration
-        /*
         if (NUM_ISLANDS > 1 && gen != 0 && gen%MIGRATION_PERIOD==0) {
+
+            //List migration_list;
+            //initList(&migration_list);
+
             // TODO: do a crossover etc before changing probabilities
             for (int i=0; i<NUM_ISLANDS; i++) {
-                for (int j=0; j<archipelago[i].num_members; j++) {
+                Lnode* member = (archipelago[i].member_list)->head;
+                int* member_num;
+                int num_to_migrate = 0;
+                while (num_to_migrate < archipelago[i].num_members && member) {
                     double migration_decicion = (double)rand()/RAND_MAX;
                     double migration_prob_cnt = 0.0;
                     int island_to_migrate = 0;
@@ -220,16 +226,60 @@ int main(int argc, char** argv) {
                          island_to_migrate++) {
                         
                         migration_prob_cnt += 
-                            archipelago[i].migration_prob_cnt[island_to_migrate];
+                            archipelago[i].migration_probs[island_to_migrate];
 
                         if (migration_prob_cnt >= migration_decicion) {
                             break;
                         }
                     }
+
+                    member = member->next;
+                    printf("Migrating node %d from island %d to %d\n",
+                           *member_num,
+                           i,
+                           island_to_migrate
+                          );
+                    member_num = popFront(archipelago[i].member_list);
+                    addBack(archipelago[island_to_migrate].member_list, 
+                            member_num
+                           );
+
+                    //addFront(&migration_list, member_num);
+
+                    num_to_migrate++;
                 }
             } 
 
-        } *//* END MIGRATION */
+            // update num_members and avg_fitness
+            for (int i=0; i<NUM_ISLANDS; i++) {
+                int member_cnt = 0;
+                Lnode* member = (archipelago[i].member_list)->head;
+                double avg_fitness = 0.0;
+                while (member) {
+                    member_cnt++;
+                    member = member->next;
+                }
+                for (int j=0; j<member_cnt; j++) {
+                    int indiv_fitness 
+                            = population[*(int*)(member->data)].fitness;
+                    avg_fitness 
+                            += (double)indiv_fitness/archipelago[i].num_members;
+                }
+            }
+            
+            for (int i=0; i<NUM_ISLANDS; i++) {
+                printf("ISLAND %d:\n", i);
+                printf("\tMembers: (%d)\n", archipelago[i].num_members);
+                printf("\t\t");
+                Lnode* member = (archipelago[i].member_list)->head;
+                for (int j=0; j<archipelago[i].num_members; j++) {
+                    printf("%d ", *(int*)(member->data));
+                    member = member->next;
+                }
+                printf("\n");
+                printf("\tAverage fitness: %f\n", archipelago[i].avg_fitness);
+            }
+        } /* END MIGRATION */
         
         // initialize child population
         Individual* children = malloc(POP_SIZE * sizeof(Individual));

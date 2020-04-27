@@ -85,6 +85,12 @@ void flipSignDouble(void *data);
 int compareDouble(const void *data1, const void *data2);
 
 /*
+ * Compare two integer values pointed to by the two pointers
+ * Return 0 if they are the same value, 1 otherwise
+ */
+int compareInt(const void *data1, const void *data2);
+
+/*
  * Returns 1 if the list is empty, 0 otherwise.
  */
 static inline int isEmptyList(struct List *list)
