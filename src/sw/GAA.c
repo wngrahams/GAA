@@ -5,6 +5,8 @@
  *
  */
 
+#define _POSIX_C_SOURCE 199309L
+
 #include <assert.h>  // assert
 #include <limits.h>  // INT_MAX
 #include <stdio.h>   // printf
