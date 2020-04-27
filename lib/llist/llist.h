@@ -7,7 +7,7 @@
 typedef struct Lnode {
     void *data;
     struct Lnode *next;
-} Lnod;
+} Lnode;
 
 /*
  * A linked list.  
