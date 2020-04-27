@@ -1,13 +1,13 @@
 CC  = gcc
 CXX = g++
 
-INCLUDES =
+INCLUDES = -I../../lib
 
 CFLAGS   = -O0 -g -Wall -std=c99   $(INCLUDES)
 CXXFLAGS = -O0 -g -Wall -std=c++11 $(INCLUDES)
 
-LDFLAGS = -g  
-LDLIBS  = 
+LDFLAGS = -g -L../../lib 
+LDLIBS  = -lllist
 
 executables = GAA
 objects = GAA.o graph-parser.o
