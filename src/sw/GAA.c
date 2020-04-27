@@ -234,15 +234,16 @@ int main(int argc, char** argv) {
                     }
 
                     member = member->next;
+                    
+                    member_num = popFront(archipelago[i].member_list);
+                    addBack(archipelago[island_to_migrate].member_list, 
+                            member_num
+                           );
                     printf("Migrating node %d from island %d to %d\n",
                            *member_num,
                            i,
                            island_to_migrate
                           );
-                    member_num = popFront(archipelago[i].member_list);
-                    addBack(archipelago[island_to_migrate].member_list, 
-                            member_num
-                           );
 
                     //addFront(&migration_list, member_num);
 
