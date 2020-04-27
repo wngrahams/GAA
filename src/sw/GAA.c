@@ -234,20 +234,30 @@ int main(int argc, char** argv) {
                         }
                     }
 
-                    member = member->next;
+                    
                     
                     if (i != island_to_migrate) {
+                        member = member->next;
                         member_num = popFront(archipelago[i].member_list);
                         addBack(archipelago[island_to_migrate].member_list, 
                                 member_num
                             );
-                        printf("Migrating node %d from island %d to %d\n",
+                        printf("Migrating indiv %d from island %d to %d\n",
                                *member_num,
                                i,
                                island_to_migrate
                               );
                     }
+                    else {
+                        member_num = member->data;
+                        /*printf("Indiv %d is staying on island %d\n",
+                               *member_num, 
+                               i
+                              );*/
+                        member = member->next;
+                    }
 
+                    
                     //addFront(&migration_list, member_num);
 
                     num_to_migrate++;
