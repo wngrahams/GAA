@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_stop);
             diversity_time += (diversity_stop.tv_sec - diversity_start.tv_sec) + 
                  (diversity_stop.tv_nsec - diversity_start.tv_nsec)/1e9;
-            printf("\r%d generations complete... Diversity=%.4f", 
+            printf("%d generations complete... Diversity=%.4f\n", 
                    gen, 
                    diversity
                   );
@@ -235,15 +235,17 @@ int main(int argc, char** argv) {
 
                     member = member->next;
                     
-                    member_num = popFront(archipelago[i].member_list);
-                    addBack(archipelago[island_to_migrate].member_list, 
-                            member_num
-                           );
-                    printf("Migrating node %d from island %d to %d\n",
-                           *member_num,
-                           i,
-                           island_to_migrate
-                          );
+                    if (i != island_to_migrate) {
+                        member_num = popFront(archipelago[i].member_list);
+                        addBack(archipelago[island_to_migrate].member_list, 
+                                member_num
+                            );
+                        printf("Migrating node %d from island %d to %d\n",
+                               *member_num,
+                               i,
+                               island_to_migrate
+                              );
+                    }
 
                     //addFront(&migration_list, member_num);
 
@@ -260,11 +262,13 @@ int main(int argc, char** argv) {
                     member_cnt++;
                     member = member->next;
                 }
+                member = (archipelago[i].member_list)->head;
                 for (int j=0; j<member_cnt; j++) {
                     int indiv_fitness 
                             = population[*(int*)(member->data)].fitness;
                     avg_fitness 
                             += (double)indiv_fitness/archipelago[i].num_members;
+                    member = member->next;
                 }
             }
             
