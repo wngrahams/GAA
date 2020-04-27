@@ -68,7 +68,7 @@ void traverseList(struct List *list, void (*f)(void *));
  * Returns the first node containing the matching data, 
  * NULL if not found.
  */
-struct Lnode *findLnode(struct List *list, const void *dataSought,
+struct Lnode *findNode(struct List *list, const void *dataSought,
 	int (*compar)(const void *, const void *));
 
 /*
@@ -103,7 +103,7 @@ void *popFront(struct List *list);
  * Remove all nodes from the list, deallocating the memory for the
  * nodes.  You can implement this function using popFront().
  */
-void removeAllLnodes(struct List *list);
+void removeAllNodes(struct List *list);
 
 /*
  * Create a node that holds the given data pointer,

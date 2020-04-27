@@ -42,7 +42,7 @@ int compareDouble(const void *data1, const void *data2)
 	return 1;
 }
 
-struct Lnode *findLnode(struct List *list, const void *dataSought,
+struct Lnode *findNode(struct List *list, const void *dataSought,
 	int (*compar)(const void *, const void *))
 {
     struct Lnode *node = list->head;
@@ -66,7 +66,7 @@ void *popFront(struct List *list)
     return data;
 }
 
-void removeAllLnodes(struct List *list)
+void removeAllNodes(struct List *list)
 {
     while (!isEmptyList(list))
 	popFront(list);
