@@ -11,6 +11,7 @@
 #include <limits.h>  // INT_MAX
 #include <stdio.h>   // printf
 #include <stdlib.h>  // malloc
+#include <string.h>  // memset
 #include <time.h>    // time
 
 #include "bitarray.h"
@@ -122,7 +123,6 @@ int main(int argc, char** argv) {
     */
 
     // Initialize islands
-    /*
     Island* archipelago = malloc(NUM_ISLANDS * sizeof(Island));
     CHECK_MALLOC_ERR(archipelago);
     for (int i=0; i<NUM_ISLANDS; i++) {
@@ -170,8 +170,8 @@ int main(int argc, char** argv) {
         }
         archipelago[i].avg_fitness = avg_fitness;
     }
-    *//* END Initialize Islands */
-    /*
+    /* END Initialize Islands */
+    
     printf("prob island migrate: %f\n", PROB_ISLAND_MIGRATE);
     printf("population size: %d\n", POP_SIZE);
     for (int i=0; i<NUM_ISLANDS; i++) {
@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
         }
         printf("\n");
         printf("\tAverage fitness: %f\n", archipelago[i].avg_fitness);
-    }*/
+    }
 
     // evolutionary loop
     for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
@@ -208,7 +208,6 @@ int main(int argc, char** argv) {
         }
 
         // Migration
-        /*
         if (NUM_ISLANDS > 1 && gen != 0 && gen%MIGRATION_PERIOD==0) {
 
             //List migration_list;
@@ -288,7 +287,7 @@ int main(int argc, char** argv) {
                 printf("\n");
                 printf("\tAverage fitness: %f\n", archipelago[i].avg_fitness);
             }
-        } *//* END MIGRATION */
+        } /* END MIGRATION */
         
         // initialize child population
         Individual* children = malloc(POP_SIZE * sizeof(Individual));
@@ -299,9 +298,17 @@ int main(int argc, char** argv) {
             children[i].partition = 
                     malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
             CHECK_MALLOC_ERR(children[i].partition);
+            memset(children[i].partition, 
+                   0, 
+                   RESERVE_BITS(graph->v)*sizeof(bitarray_t)
+                  );
             children[i+1].partition = 
                     malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
             CHECK_MALLOC_ERR(children[i].partition);
+            memset(children[i+1].partition, 
+                   0,
+                   RESERVE_BITS(graph->v)*sizeof(bitarray_t)
+                  ); 
 
             // SELECTION:
             // Select a pair of parent chromosomes from the current population.
@@ -502,14 +509,14 @@ int main(int argc, char** argv) {
           );
 
     // free islands
-    /*for (int i=0; i<NUM_ISLANDS; i++) {
+    for (int i=0; i<NUM_ISLANDS; i++) {
         traverseList(archipelago[i].member_list, &free);
         removeAllNodes(archipelago[i].member_list);
         free(archipelago[i].member_list);
         free(archipelago[i].migration_probs);
     }
     free(archipelago);
-    */
+
     // free population
     for (int i=0; i<POP_SIZE; i++) {
         free(population[i].partition);
