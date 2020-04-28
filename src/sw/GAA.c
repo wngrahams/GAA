@@ -5,7 +5,12 @@
  *
  */
 
-#define _POSIX_C_SOURCE 199309L
+// enable timespec
+#if __STDC_VERSION__ >= 199901L
+#define _XOPEN_SOURCE 600
+#else
+#define _XOPEN_SOURCE 500
+#endif /* __STDC_VERSION__ */
 
 #include <assert.h>  // assert
 #include <limits.h>  // INT_MAX
@@ -20,6 +25,8 @@
 #include "ga-params.h"
 #include "ga-utils.h"
 #include "graph-parser.h"
+#include "island.h"
+#include "llist/llist.h"
 #include "selection.h"
 
 
@@ -125,6 +132,8 @@ int main(int argc, char** argv) {
     // Initialize islands
     Island* archipelago = malloc(NUM_ISLANDS * sizeof(Island));
     CHECK_MALLOC_ERR(archipelago);
+    init_archipelago(archipelago, population);
+    /*
     for (int i=0; i<NUM_ISLANDS; i++) {
         archipelago[i].member_list = malloc(POP_SIZE * sizeof(List));
         CHECK_MALLOC_ERR(archipelago[i].member_list);
@@ -170,7 +179,7 @@ int main(int argc, char** argv) {
         }
         archipelago[i].avg_fitness = avg_fitness;
     }
-    /* END Initialize Islands */
+    *//* END Initialize Islands */
     
     printf("prob island migrate: %f\n", PROB_ISLAND_MIGRATE);
     printf("population size: %d\n", POP_SIZE);
@@ -234,7 +243,9 @@ int main(int argc, char** argv) {
                         }
                     }
 
-                    
+                    // TODO: get rid of the else statement and the member=
+                    // member->next in the if statement, uncomment the next line
+                    //member = member->next
                     
                     if (i != island_to_migrate) {
                         member = member->next;
@@ -242,11 +253,11 @@ int main(int argc, char** argv) {
                         addBack(archipelago[island_to_migrate].member_list, 
                                 member_num
                             );
-                        printf("Migrating indiv %d from island %d to %d\n",
+                        /*printf("Migrating indiv %d from island %d to %d\n",
                                *member_num,
                                i,
                                island_to_migrate
-                              );
+                              );*/
                     }
                     else {
                         member_num = member->data;
@@ -257,7 +268,6 @@ int main(int argc, char** argv) {
                         member = member->next;
                     }
 
-                    
                     //addFront(&migration_list, member_num);
 
                     num_to_migrate++;
@@ -302,7 +312,52 @@ int main(int argc, char** argv) {
         // initialize child population
         Individual* children = malloc(POP_SIZE * sizeof(Individual));
         CHECK_MALLOC_ERR(children);
+        int child_cnt = 0;
 
+        // loop for each island
+        /*
+        for (int island=0; i<NUM_ISLANDS; island++) {
+
+
+
+            // loop for one generation
+            for (int indiv=0; indiv<archipelago[island].num_members; indiv+=2) {
+
+                assert(child_cnt + 1 < POP_SIZE);
+
+                children[child_cnt].partition =
+                        malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
+                CHECK_MALLOC_ERR(children[child_cnt].partition);
+                memset(children[child_cnt].partition,
+                       0,
+                       RESERVE_BITS(graph->v)*sizeof(bitarray_t)
+                      );
+                children[child_cnt+1].partition =
+                        malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
+                CHECK_MALLOC_ERR(children[child_cnt+1].partition);
+                memset(children[child_cnt+1].partition,
+                       0,
+                       RESERVE_BITS(graph->v)*sizeof(bitarray_t)
+                      );
+
+                // SELECTION:
+                // Select a pair of parent chromosomes from the current population.
+                int parent_idxs[2];
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &selection_start);
+
+                parent_idxs[0] = tournament_selection(population, 
+                                                      &(archipelago[island])
+                                                     );
+                parent_idxs[1] = tournament_selection(population, 
+                                                      &(archipelago[island])
+                                                     );
+                
+
+            } *//* END ISLAND GENERATION */
+
+        //} /* END GENERATION FOR ALL ISLANDS */
+
+        // loop for one generation
         for (int i=0; i<POP_SIZE; i+=2) {
 
             children[i].partition = 
