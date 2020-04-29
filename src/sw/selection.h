@@ -9,6 +9,9 @@
 #define _SELECTION_H_
 
 #include "ga-params.h"
+#include "ga-utils.h"
+#include "island.h"
+#include "llist/llist.h"
 
 
 /*
@@ -47,20 +50,34 @@ static inline void roulette_wheel_selection(Individual* pop,
 
 /*
  * Tournament Selection: Two individuals are chosen at random from the 
- * population. A random number r is then chosen between 0 and 1. If r < k 
+ * island. A random number r is then chosen between 0 and 1. If r < k 
  * (where k is a parameter, for example 0.75), the fitter of the two 
  * individuals is selected to be a parent; otherwise the less fit individual 
  * is selected. The two are then returned to the original population and can 
  * be selected again.
  */
-static inline int tournament_selection(Individual* pop) {
+static inline int tournament_selection(Individual* pop, Island* island) {
     
-    int parent1_idx = rand() % POP_SIZE;
-    int parent2_idx = -1;
+    int parent1 = urandint(island->num_members);
+    int parent2 = -1;
     do {
-        parent2_idx = rand() % POP_SIZE;
-    } while (parent2_idx == parent1_idx);  // ensures the parents are diffent
-                                           // individuals
+        parent2 = urandint(island->num_members);
+    } while (parent2 == parent1);  // ensures the parents are different
+                                   // individuals
+    
+    // assign the indices to the values contained in the island data    
+    int parent1_idx, parent2_idx;
+    int count = 0;
+    Lnode* current = island->member_list->head;
+    while (current) {
+        int data = *(int*)(current->data);
+        if (parent1 == count)
+            parent1_idx = data;
+        if (parent2 == count)
+            parent2_idx = data;
+        current = current->next;
+        count++;
+    }
                                            
     double r = (double)rand()/RAND_MAX;
     if (r < TOURNAMENT_SELECT_PROB) {

@@ -59,11 +59,11 @@ static inline void init_island(Island* isl,
         curr = curr->next;
     }
 
-    if (NULL == init_probs) {
-        // assign initial migration probabilities
-        isl->migration_probs = malloc(NUM_ISLANDS * sizeof(double));
-        CHECK_MALLOC_ERR(isl->migration_probs);
+    isl->migration_probs = malloc(NUM_ISLANDS * sizeof(double));
+    CHECK_MALLOC_ERR(isl->migration_probs);
 
+    if (NULL == init_probs) {
+        // assign initial migration probabilities        
         for (int i=0; i<NUM_ISLANDS; i++) {
             if (i!=islno) {
                 isl->migration_probs[i] = PROB_ISLAND_MIGRATE;
@@ -103,7 +103,7 @@ static inline void init_archipelago(Island* arch, Individual* pop) {
         addBack(member_lists[i%NUM_ISLANDS], idx_to_add);
     }
 
-    // initilise the islands with default migration probabilities
+    // initilize the islands with default migration probabilities
     // then assign the average fitness for each
     for (int i=0; i<NUM_ISLANDS; i++) {
         init_island(&(arch[i]), i, member_lists[i], NULL);
