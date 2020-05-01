@@ -106,17 +106,22 @@ int main(int argc, char** argv) {
         if (gen == 0)
             printf("Starting GA for %d generations...\n", NUM_GENERATIONS);
         else if (gen%DIVERSITY_PERIOD == 0) {
+
+            printf("\r%d generations complete... Diversity on each island: ", gen);
+
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_start);
 
-            diversity = calc_diversity(archipelago[0], graph->v);
+            for (int isl=0; isl<NUM_ISLANDS; isl++) {
+                diversity = calc_diversity(archipelago[isl], graph->v);
+                printf("%.3f", diversity);
+                if (isl < NUM_ISLANDS-1)
+                    printf(" ,");
+            }
 
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_stop);
             diversity_time += (diversity_stop.tv_sec - diversity_start.tv_sec) + 
                  (diversity_stop.tv_nsec - diversity_start.tv_nsec)/1e9;
-            printf("\r%d generations complete... Diversity=%.4f", 
-                   gen, 
-                   diversity
-                  );
+            
             fflush(stdout);
         }
 
