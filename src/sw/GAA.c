@@ -81,41 +81,23 @@ int main(int argc, char** argv) {
 
         archipelago[isl] = population;
     }
-        
-    for (int i=0; i<POP_SIZE; i++) {
-        // calculate initial fitness:
-        
-        // TODO: take fitness calculation out of loop so that hardware can do
-        // do it all in parallel
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_start);
-        archipelago[0][i].fitness = calc_fitness(graph, &(archipelago[0][i]));
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_stop);
-        fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec) + 
-                 (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
 
-        total_inverse_fitness += 1.0/(double)archipelago[0][i].fitness;
-        
+    // calculate initial fitness for each individual on each island
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_start);
+    for (int isl=0; isl<NUM_ISLANDS; isl++) {
+        for (int idv=0; idv<POP_SIZE; idv++) {
 
-        /*
-        printf("Individual %d:\n", i);
-        printf("\tpartition: ");
-        for( int j=0; j<graph->v; j++) {
-            printf("%d", getbit(population[i].partition, j));
+            archipelago[isl][idv].fitness = 
+                    calc_fitness(graph, &(archipelago[isl][idv]));
+
+            total_inverse_fitness += 1.0/(double)archipelago[isl][idv].fitness;
         }
-        printf("\n");
-        printf("\tfitness = %d\n", population[i].fitness);
-        */
+    }
 
-    } /* END initialize population */
-
-    // TODO: calculate initial fitnesses in hardware here
-    //  ---------
-
-    /*
-    printf("Total inverse fitness: %f\n", total_inverse_fitness);
-    printf("RAND_MAX: %d\n", RAND_MAX);
-    */
-
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_stop);
+    fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec) + 
+                 (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
+    
     // evolutionary loop
     for (int gen=0; gen<NUM_GENERATIONS; gen++) {
 
