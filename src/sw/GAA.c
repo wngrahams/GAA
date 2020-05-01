@@ -81,9 +81,11 @@ int main(int argc, char** argv) {
     
     // calculate fitness for each individual on each island
     // TODO: hardware
+    printf("Fitness time: %f\n", fitness_time);
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_start);
     for (int isl=0; isl<NUM_ISLANDS; isl++) {
         for (int idv=0; idv<POP_SIZE; idv++) {
+
             archipelago[isl][idv].fitness = 
                     calc_fitness(graph, &(archipelago[isl][idv]));
 
@@ -94,6 +96,7 @@ int main(int argc, char** argv) {
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_stop);
     fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec)
                     + (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
+    printf("Fitness time: %f\n", fitness_time);
     /* END INITIALIZE ISLANDS AND THEIR POPULATIONS */
 
     /*
@@ -107,7 +110,7 @@ int main(int argc, char** argv) {
         if (gen == 0) {
             printf("Starting GA for %d generations...\n", NUM_GENERATIONS);
         }
-        else if (gen%100 == 0) {
+        else if (gen%10 == 0) {
 
             /* MEASURE DIVERSITY */
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_start);
@@ -135,6 +138,8 @@ int main(int argc, char** argv) {
 
             /* END MEASURE DIVERSITY */
         }
+
+        printf("Fitness time (line 142): %f\n", fitness_time);
 
         /* ISLAND LOOP */
         // Loop over each island, performing the evolutionary operators to
@@ -188,12 +193,12 @@ int main(int argc, char** argv) {
                                   + (selection_stop.tv_nsec 
                                        - selection_start.tv_nsec)/1e9;
             
-                /*
+                
                 printf("selected parents %d and %d.\n",
                        parent_idxs[0],
                        parent_idxs[1]
                       );
-                */
+                
                 /* END SELECTION */
 
                 /* CROSSOVER */
@@ -231,18 +236,18 @@ int main(int argc, char** argv) {
                 // Mutate the two offspring at each locus with probability 
                 // MUTATION_RATE (the mutation probability or mutation rate)
             
-                //printf("Mutation...\n");
+                printf("Mutation...\n");
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &mutation_start);
                 for (int childno=0; childno<2; childno++) {
                 
-                    //printf("\tMutating child %d at bits: ", childno);
+                    printf("\tMutating child %d at bits: ", childno);
 
                     for (int locus=0; locus<graph->v; locus++) {
                     
                         double mutation_decision1 = (double)rand()/RAND_MAX;
                         if (mutation_decision1 < MUTATION_PROB) {
 
-                            //printf("%d, ", locus);
+                            printf("%d, ", locus);
                         
                             // mutate: 1->0 or 0->1
                             putbit(children[idv+childno].partition,
@@ -251,14 +256,14 @@ int main(int argc, char** argv) {
                                   );
                         }
                     }
-                    /*
+                    
                     printf("\n");
                     printf("\tResult: ");
                     for (int j=0; j<graph->v; j++) {
                         printf("%d", getbit(children[idv+childno].partition, j));
                     }   
                     printf("\n");
-                    */
+                    
 
                 } 
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &mutation_stop);
@@ -280,21 +285,38 @@ int main(int argc, char** argv) {
                         += 1.0/(double)children[idv+1].fitness;
 
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_stop);
-                fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec) 
-                                + (fitness_stop.tv_nsec 
-                                     - fitness_start.tv_nsec)/1e9;
+                fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec) + 
+                        (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
 
+                printf("Fitness time (isl=%d, idv=%d): %f\n", isl, idv, fitness_time);
 
             } /* END EVOLUTIONARY OPERATORS */
 
-            // replace the current population with the child population
-            archipelago[isl] = children;
+            printf("Fitness time (line 295): %f\n", fitness_time);
 
-            // free old parents
-            for (int i=0; i<POP_SIZE; i++) {
-                free(parents[i].partition);
+            // replace the current population with the child population
+            for (int idv=0; idv<POP_SIZE; idv++) {
+                for (int j=0; j<RESERVE_BITS(graph->v); j++) {
+                    archipelago[isl][idv].partition[j] = 
+                                            children[idv].partition[j];
+                }
+                archipelago[isl][idv].fitness = children[idv].fitness;
             }
-            free(parents);
+            
+            // free children
+            for (int i=0; i<POP_SIZE; i++) {
+                free(children[i].partition);
+            }
+            free(children);
+
+            printf("new population on island %d:\n", isl);
+            for (int i=0; i<POP_SIZE; i++) {
+                printf("Individual %d:\n", i);
+                printf("\tFitness=%d\n", archipelago[isl][i].fitness);
+
+            }
+
+            printf("Fitness time (line 306): %f\n", fitness_time);
 
         } /* END ISLAND LOOP */
 
