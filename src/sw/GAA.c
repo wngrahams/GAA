@@ -359,6 +359,14 @@ int main(int argc, char** argv) {
     }
     free(archipelago[0]);
 
+    // Free population on each island
+    for (int isl=0; isl<NUM_ISLANDS; isl++) {
+        for (int idv=0; idv<POP_SIZE; idv++) {
+            free(archipelago[isl][idv].partition);
+        }
+        free(archipelago[isl]);
+    }
+
 cleanup_graph_contents:
     // free memory used for graph:
     for (int i=0; i<graph->v; i++) {
