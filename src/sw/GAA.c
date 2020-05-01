@@ -71,25 +71,11 @@ int main(int argc, char** argv) {
     }
     Individual* population = malloc(POP_SIZE * sizeof(Individual));
     CHECK_MALLOC_ERR(population);
+
+    init_population(population, graph->v);
     
     for (int i=0; i<POP_SIZE; i++) {
-        // allocate memory for the individual's partition
-        population[i].partition = 
-                malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
-        CHECK_MALLOC_ERR(population[i].partition);
-
-        // initialize partitions to 0:
-        for (int j=0; j<RESERVE_BITS(graph->v); j++) {
-            (population[i].partition)[j] = 0;
-        }
-
-        // create a random starting partition: 
-        for (int j=0; j<graph->v; j++) {
-            int rand_bit = urandint(2);
-            putbit(population[i].partition, j, rand_bit); 
-        }
-
-        // calculate fitness:
+        // calculate initial fitness:
         
         // TODO: take fitness calculation out of loop so that hardware can do
         // do it all in parallel
@@ -473,6 +459,32 @@ int calc_fitness(Graph* graph, Individual* indiv) {
 
     return fitness;
 
+}
+
+
+/*
+ * Initializes random partitions for POP_SIZE individuals in a given 
+ * population (array of individuals)
+ */
+void init_population(Individual* population, int num_nodes) {
+
+    for (int i=0; i<POP_SIZE; i++) {
+        // allocate memory for the individual's partition
+        population[i].partition =
+                malloc(RESERVE_BITS(num_nodes) * sizeof(bitarray_t));
+        CHECK_MALLOC_ERR(population[i].partition);
+
+        // initialize partitions to 0:
+        for (int j=0; j<RESERVE_BITS(num_nodes); j++) {
+            (population[i].partition)[j] = 0;
+        }
+
+        // create a random starting partition:
+        for (int j=0; j<num_nodes; j++) {
+            int rand_bit = urandint(2);
+            putbit(population[i].partition, j, rand_bit);
+        }
+    }
 }
 
 
