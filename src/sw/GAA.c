@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
                 diversity = calc_diversity(archipelago[isl], graph->v);
                 printf("%.3f", diversity);
                 if (isl < NUM_ISLANDS-1)
-                    printf(" ,");
+                    printf(", ");
             }
 
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_stop);
