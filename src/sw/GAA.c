@@ -245,18 +245,23 @@ int main(int argc, char** argv) {
 
     // print best individual
     int min_fitness = INT_MAX;
-    int min_idx = -1;
-    for (int i=0; i<POP_SIZE; i++) {
-        if (archipelago[0][i].fitness < min_fitness) {
-            min_fitness = archipelago[0][i].fitness;
-            min_idx = i;
-        }
+    int min_isl_idx = -1;
+    int min_idv_idx = -1;
+    for (int isl=0; isl<NUM_ISLANDS; isl++) {
+        for (int idv=0; idv<POP_SIZE; idv++) {
+            if (archipelago[isl][idv].fitness < min_fitness) {
+                min_fitness = archipelago[isl][idv].fitness;
+                min_isl_idx = isl;
+                min_idv_idx = idv;
+            }
+       }
     }
-    printf("Most fit individual: ");
+
+    printf("Most fit individual was found on island %d: ", min_isl_idx);
     int p0_cnt = 0;
     int p1_cnt = 0;
     for (int i=0; i<graph->v; i++) {
-        if (getbit(archipelago[0][min_idx].partition, i) == 0)
+        if (getbit(archipelago[min_isl_idx][min_idv_idx].partition, i) == 0)
             p0_cnt++;
         else
             p1_cnt++;
@@ -266,13 +271,15 @@ int main(int argc, char** argv) {
     printf("\n");
     int external_cost = 0;
     for (int i=0; i<graph->e; i++) {
-        if (getbit(archipelago[0][min_idx].partition, (graph->edges)[i]->n1) !=
-            getbit(archipelago[0][min_idx].partition, (graph->edges)[i]->n2)   ) {
+        if (getbit(archipelago[min_isl_idx][min_idv_idx].partition, 
+                   (graph->edges)[i]->n1) 
+            != getbit(archipelago[min_isl_idx][min_idv_idx].partition, 
+                      (graph->edges)[i]->n2)) {
             
             external_cost += (graph->edges)[i]->weight;
         }
     }
-    printf("\tFitness = %d\n", archipelago[0][min_idx].fitness);
+    printf("\tFitness = %d\n", archipelago[min_isl_idx][min_idv_idx].fitness);
     printf("\tNumber of nodes in partition 0: %d\n", p0_cnt);
     printf("\t                             1: %d\n", p1_cnt);
     printf("\tTotal external cost: %d\n", external_cost);
