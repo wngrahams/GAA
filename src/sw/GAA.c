@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
 
         if (gen == 0)
             printf("Starting GA for %d generations...\n", NUM_GENERATIONS);
-        else if (gen%25==0) {
+        else if (gen%DIVERSITY_PERIOD==0) {
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_start);
             diversity = calc_diversity(archipelago[0], graph->v);
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_stop);

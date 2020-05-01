@@ -26,6 +26,9 @@
 #define PROB_ISLAND_REWARD 0.05
 #define PROB_ISLAND_PENALTY 0.05
 
+#define DIVERSITY_PERIOD 10  // measure diversity every DIVERSITY_PERIOD gens
+
+
 typedef struct Individual {
     bitarray_t* partition;  // array of bits representing partition
     int fitness;            // fitness of individual's solution
