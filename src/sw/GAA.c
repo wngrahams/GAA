@@ -64,28 +64,36 @@ int main(int argc, char** argv) {
                                        // fitness (since we are looking to
                                        // minimize fitness)
 
-    // initialize population
+    // initialize islands and their populations
     if (!POP_SIZE % 2) {
         fprintf(stderr, "POPULATION SIZE MUST BE AN EVEN NUMBER");
         goto cleanup_graph_contents;
     }
-    Individual* population = malloc(POP_SIZE * sizeof(Individual));
-    CHECK_MALLOC_ERR(population);
 
-    init_population(population, graph->v);
-    
+    // array of islands, on each island is a population
+    Individual* archipelago[NUM_ISLANDS];
+
+    for (int isl=0; isl<NUM_ISLANDS; isl++) {
+        Individual* population = malloc(POP_SIZE * sizeof(Individual));
+        CHECK_MALLOC_ERR(population);
+
+        init_population(population, graph->v);
+
+        archipelago[isl] = population;
+    }
+        
     for (int i=0; i<POP_SIZE; i++) {
         // calculate initial fitness:
         
         // TODO: take fitness calculation out of loop so that hardware can do
         // do it all in parallel
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_start);
-        population[i].fitness = calc_fitness(graph, &(population[i]));
+        archipelago[0][i].fitness = calc_fitness(graph, &(archipelago[0][i]));
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_stop);
         fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec) + 
                  (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
 
-        total_inverse_fitness += 1.0/(double)population[i].fitness;
+        total_inverse_fitness += 1.0/(double)archipelago[0][i].fitness;
         
 
         /*
@@ -109,15 +117,15 @@ int main(int argc, char** argv) {
     */
 
     // evolutionary loop
-    for (int gen=0; gen<NUM_OF_GENERATIONS; gen++) {
+    for (int gen=0; gen<NUM_GENERATIONS; gen++) {
 
         double diversity = 0;
 
         if (gen == 0)
-            printf("Starting GA for %d generations...\n", NUM_OF_GENERATIONS);
+            printf("Starting GA for %d generations...\n", NUM_GENERATIONS);
         else if (gen%25==0) {
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_start);
-            diversity = calc_diversity(population, graph->v);
+            diversity = calc_diversity(archipelago[0], graph->v);
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_stop);
             diversity_time += (diversity_stop.tv_sec - diversity_start.tv_sec) + 
                  (diversity_stop.tv_nsec - diversity_start.tv_nsec)/1e9;
@@ -159,8 +167,8 @@ int main(int argc, char** argv) {
                                      total_inverse_fitness
                                     );
             */
-            parent_idxs[0] = tournament_selection(population);
-            parent_idxs[1] = tournament_selection(population);
+            parent_idxs[0] = tournament_selection(archipelago[0]);
+            parent_idxs[1] = tournament_selection(archipelago[0]);
 
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &selection_stop);
             selection_time += (selection_stop.tv_sec - selection_start.tv_sec) + 
@@ -176,21 +184,21 @@ int main(int argc, char** argv) {
             // CROSSOVER:
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &crossover_start);
             /*
-            single_point_crossover(population, 
+            single_point_crossover(archipelago[0], 
                                    parent_idxs, 
                                    graph->v,
                                    &(children[ i ]),
                                    &(children[i+1])
                                   );*/
             /*            
-            two_point_crossover(population,
+            two_point_crossover(archipelago[0],
                                 parent_idxs,
                                 graph->v,
                                 &(children[ i ]),
                                 &(children[i+1])
                                );*/
             
-            parameterized_uniform_crossover(population,
+            parameterized_uniform_crossover(archipelago[0],
                                             parent_idxs,
                                             graph->v,
                                             &(children[ i ]),
@@ -256,10 +264,10 @@ int main(int argc, char** argv) {
         total_inverse_fitness = 0;
         for (int i=0; i<POP_SIZE; i++) {
             for (int j=0; j<RESERVE_BITS(graph->v); j++) {
-                population[i].partition[j] = children[i].partition[j];
+                archipelago[0][i].partition[j] = children[i].partition[j];
             }
-            population[i].fitness = children[i].fitness;
-            total_inverse_fitness += 1.0/(double)population[i].fitness;
+            archipelago[0][i].fitness = children[i].fitness;
+            total_inverse_fitness += 1.0/(double)archipelago[0][i].fitness;
         }
 
         // TODO:
@@ -272,14 +280,14 @@ int main(int argc, char** argv) {
         free(children);
 
     } // end of evolution loop
-    printf("\r%d generations complete.  \n", NUM_OF_GENERATIONS);
+    printf("\r%d generations complete.  \n", NUM_GENERATIONS);
 
     // print best individual
     int min_fitness = INT_MAX;
     int min_idx = -1;
     for (int i=0; i<POP_SIZE; i++) {
-        if (population[i].fitness < min_fitness) {
-            min_fitness = population[i].fitness;
+        if (archipelago[0][i].fitness < min_fitness) {
+            min_fitness = archipelago[0][i].fitness;
             min_idx = i;
         }
     }
@@ -287,7 +295,7 @@ int main(int argc, char** argv) {
     int p0_cnt = 0;
     int p1_cnt = 0;
     for (int i=0; i<graph->v; i++) {
-        if (getbit(population[min_idx].partition, i) == 0)
+        if (getbit(archipelago[0][min_idx].partition, i) == 0)
             p0_cnt++;
         else
             p1_cnt++;
@@ -297,13 +305,13 @@ int main(int argc, char** argv) {
     printf("\n");
     int external_cost = 0;
     for (int i=0; i<graph->e; i++) {
-        if (getbit(population[min_idx].partition, (graph->edges)[i]->n1) !=
-            getbit(population[min_idx].partition, (graph->edges)[i]->n2)   ) {
+        if (getbit(archipelago[0][min_idx].partition, (graph->edges)[i]->n1) !=
+            getbit(archipelago[0][min_idx].partition, (graph->edges)[i]->n2)   ) {
             
             external_cost += (graph->edges)[i]->weight;
         }
     }
-    printf("\tFitness = %d\n", population[min_idx].fitness);
+    printf("\tFitness = %d\n", archipelago[0][min_idx].fitness);
     printf("\tNumber of nodes in partition 0: %d\n", p0_cnt);
     printf("\t                             1: %d\n", p1_cnt);
     printf("\tTotal external cost: %d\n", external_cost);
@@ -347,9 +355,9 @@ int main(int argc, char** argv) {
 
     // free population
     for (int i=0; i<POP_SIZE; i++) {
-        free(population[i].partition);
+        free(archipelago[0][i].partition);
     }
-    free(population);
+    free(archipelago[0]);
 
 cleanup_graph_contents:
     // free memory used for graph:
