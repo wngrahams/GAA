@@ -353,12 +353,6 @@ int main(int argc, char** argv) {
     }
     free(archipelago);*/
 
-    // free population
-    for (int i=0; i<POP_SIZE; i++) {
-        free(archipelago[0][i].partition);
-    }
-    free(archipelago[0]);
-
     // Free population on each island
     for (int isl=0; isl<NUM_ISLANDS; isl++) {
         for (int idv=0; idv<POP_SIZE; idv++) {
