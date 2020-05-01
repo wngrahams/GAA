@@ -98,16 +98,18 @@ int main(int argc, char** argv) {
     fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec) + 
                  (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
     
-    // evolutionary loop
+    /* EVOLUTIONARY LOOP */
     for (int gen=0; gen<NUM_GENERATIONS; gen++) {
 
         double diversity = 0;
 
         if (gen == 0)
             printf("Starting GA for %d generations...\n", NUM_GENERATIONS);
-        else if (gen%DIVERSITY_PERIOD==0) {
+        else if (gen%DIVERSITY_PERIOD == 0) {
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_start);
+
             diversity = calc_diversity(archipelago[0], graph->v);
+
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &diversity_stop);
             diversity_time += (diversity_stop.tv_sec - diversity_start.tv_sec) + 
                  (diversity_stop.tv_nsec - diversity_start.tv_nsec)/1e9;
@@ -118,150 +120,122 @@ int main(int argc, char** argv) {
             fflush(stdout);
         }
 
-        // initialize child population
-        Individual* children = malloc(POP_SIZE * sizeof(Individual));
-        CHECK_MALLOC_ERR(children);
+        // loop over each island
+        for (int isl=0; isl<NUM_ISLANDS; isl++) {
 
-        for (int i=0; i<POP_SIZE; i+=2) {
+            // Initialize children
+            Individual* children = malloc(POP_SIZE * sizeof(Individual));
+            CHECK_MALLOC_ERR(children);
 
-            children[i].partition = 
-                    malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
-            CHECK_MALLOC_ERR(children[i].partition);
-            memset(children[i].partition,
-                   0,
-                   RESERVE_BITS(graph->v)*sizeof(bitarray_t)
-                  );
-            children[i+1].partition = 
-                    malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
-            CHECK_MALLOC_ERR(children[i].partition);
-            memset(children[i+1].partition, 
-                   0, 
-                   RESERVE_BITS(graph->v)*sizeof(bitarray_t)
-                  );
+            // create child population two individuals at a time using the 
+            // genetic operators of selection, crossover, and mutation
+            for (int idv=0; idv<POP_SIZE; idv+=2) {
+    
+                // initialize memory for child partitions
+                children[idv].partition = 
+                        malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
+                CHECK_MALLOC_ERR(children[idv].partition);
+                memset(children[idv].partition,
+                       0,
+                       RESERVE_BITS(graph->v)*sizeof(bitarray_t)
+                      );
+                children[idv+1].partition = 
+                        malloc(RESERVE_BITS(graph->v) * sizeof(bitarray_t));
+                CHECK_MALLOC_ERR(children[idv+1].partition);
+                memset(children[idv+1].partition, 
+                       0, 
+                       RESERVE_BITS(graph->v)*sizeof(bitarray_t)
+                      );
 
-            // SELECTION:
-            // Select a pair of parent chromosomes from the current population.
-            int parent_idxs[2];
-            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &selection_start);
-            /*
-            roulette_wheel_selection(population, 
-                                     parent_idxs, 
-                                     total_inverse_fitness
-                                    );
-            */
-            parent_idxs[0] = tournament_selection(archipelago[0]);
-            parent_idxs[1] = tournament_selection(archipelago[0]);
+                /* SELECTION */
+                int parent_idxs[2] = {-1, -1};
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &selection_start);
 
-            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &selection_stop);
-            selection_time += (selection_stop.tv_sec - selection_start.tv_sec) + 
-                            (selection_stop.tv_nsec - selection_start.tv_nsec)/1e9;
-            
-            /*
-            printf("selected parents %d and %d.\n",
-                   parent_idxs[0],
-                   parent_idxs[1]
-                  );
-            */
-            
-            // CROSSOVER:
-            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &crossover_start);
-            /*
-            single_point_crossover(archipelago[0], 
-                                   parent_idxs, 
-                                   graph->v,
-                                   &(children[ i ]),
-                                   &(children[i+1])
-                                  );*/
-            /*            
-            two_point_crossover(archipelago[0],
-                                parent_idxs,
-                                graph->v,
-                                &(children[ i ]),
-                                &(children[i+1])
-                               );*/
-            
-            parameterized_uniform_crossover(archipelago[0],
-                                            parent_idxs,
-                                            graph->v,
-                                            &(children[ i ]),
-                                            &(children[i+1])
-                                           );
-            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &crossover_stop);
-            crossover_time += (crossover_stop.tv_sec - crossover_start.tv_sec) + 
-                 (crossover_stop.tv_nsec - crossover_start.tv_nsec)/1e9;
-              
-            // MUTATION:
-            // Mutate the two offspring at each locus with probability 
-            // MUTATION_RATE (the mutation probability or mutation rate)
-            
-            //printf("Mutation...\n");
-            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &mutation_start);
-            for (int childno=0; childno<2; childno++) {
-                
-                //printf("\tMutating child %d at bits: ", childno);
+                parent_idxs[0] = tournament_selection(archipelago[isl]);
+                do {
+                    parent_idxs[1] = tournament_selection(archipelago[isl]);
+                } while (parent_idxs[0] == parent_idxs[1]);
 
-                for (int locus=0; locus<graph->v; locus++) {
-                    
-                    double mutation_decision1 = (double)rand()/RAND_MAX;
-                    if (mutation_decision1 < MUTATION_PROB) {
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &selection_stop);
+                selection_time += 
+                        (selection_stop.tv_sec - selection_start.tv_sec) + 
+                        (selection_stop.tv_nsec - selection_start.tv_nsec)/1e9;
+                /* END SELECTION */
 
-                        //printf("%d, ", locus);
-                        
-                        // mutate: 1->0 or 0->1
-                        putbit(children[i+childno].partition,
-                               locus,
-                               !getbit(children[i+childno].partition, locus)
-                              );
+                /* CROSSOVER */
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &crossover_start);
+
+                parameterized_uniform_crossover(archipelago[isl],
+                                                parent_idxs,
+                                                graph->v,
+                                                &(children[idv]),
+                                                &(children[idv+1])
+                                               );
+
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &crossover_stop);
+                crossover_time += 
+                        (crossover_stop.tv_sec - crossover_start.tv_sec) +
+                        (crossover_stop.tv_nsec - crossover_start.tv_nsec)/1e9;
+                /* END CROSSOVER */
+
+                /* MUTATION */
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &mutation_start);
+
+                for (int childno=0; childno<2; childno++) {
+                    for (int locus=0; locus<graph->v; locus++) {
+
+                        double mutation_decision1 = (double)rand()/RAND_MAX;
+                        if (mutation_decision1 < MUTATION_PROB) {
+                            // mutate: 1->0 or 0->1
+                            putbit(children[idv+childno].partition,
+                                   locus,
+                                   !getbit(children[idv+childno].partition, locus)
+                                  );
+                        }
                     }
                 }
-                /*
-                printf("\n");
-                printf("\tResult: ");
-                for (int j=0; j<graph->v; j++) {
-                    printf("%d", getbit(children[i+childno].partition, j));
+
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &mutation_stop);
+                mutation_time += 
+                        (mutation_stop.tv_sec - mutation_start.tv_sec) +
+                        (mutation_stop.tv_nsec - mutation_start.tv_nsec)/1e9;
+                /* END MUTATION */
+
+                // CALCULATE FITNESS OF NEW CHILDREN
+                // TODO: move this outside of the loop so that the hardware can do
+                // them all in parallel
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_start);
+
+                children[idv].fitness = calc_fitness(graph, &(children[idv]));
+                children[idv+1].fitness = calc_fitness(graph, &(children[idv+1]));
+
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_stop);
+                fitness_time += 
+                        (fitness_stop.tv_sec - fitness_start.tv_sec) + 
+                        (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
+
+            } /* END GENETIC OPERATORS (SELECTION, CROSSOVER, MUTATION) */
+
+            // Replace the island's current population with the new children
+            for (int idv=0; idv<POP_SIZE; idv++) {
+                for (int j=0; j<RESERVE_BITS(graph->v); j++) {
+                    archipelago[isl][idv].partition[j] 
+                            = children[idv].partition[j];
                 }
-                printf("\n");
-                */
-
-            } /* END MUTATION */
-            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &mutation_stop);
-            mutation_time += (mutation_stop.tv_sec - mutation_start.tv_sec) + 
-                 (mutation_stop.tv_nsec - mutation_start.tv_nsec)/1e9;
-
-            // CALCULATE FITNESS OF NEW CHILDREN
-            // TODO: move this outside of the loop so that the hardware can do
-            // them all in parallel
-            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_start);
-            children[ i ].fitness = calc_fitness(graph, &(children[ i ]));
-            children[i+1].fitness = calc_fitness(graph, &(children[i+1]));
-            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_stop);
-            fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec) + 
-                 (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
-            
-        } /* END loop for one generation: SELECTION, CROSSOVER, MUTATION */
-
-        // Replace the current population with the new population
-        // TODO: instead of making deep copies, freeing the children, and then
-        // reallocating, just move the pointers around
-        total_inverse_fitness = 0;
-        for (int i=0; i<POP_SIZE; i++) {
-            for (int j=0; j<RESERVE_BITS(graph->v); j++) {
-                archipelago[0][i].partition[j] = children[i].partition[j];
+                archipelago[isl][idv].fitness = children[idv].fitness;
+                //total_inverse_fitness += 1.0/(double)archipelago[0][i].fitness;
             }
-            archipelago[0][i].fitness = children[i].fitness;
-            total_inverse_fitness += 1.0/(double)archipelago[0][i].fitness;
-        }
 
-        // TODO:
-        // Put hardware fitness here (all individuals in parallel)
+            // free the children
+            for (int idv=0; idv<POP_SIZE; idv++) {
+               free(children[idv].partition);
+            }
+            free(children);
 
-        // free the children
-        for (int i=0; i<POP_SIZE; i++) {
-            free(children[i].partition);
-        }
-        free(children);
+        } /* END ISLAND LOOP */
 
-    } // end of evolution loop
+    } /* END EVOLUTIONARY LOOP */
+
     printf("\r%d generations complete.  \n", NUM_GENERATIONS);
 
     // print best individual
