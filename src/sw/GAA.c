@@ -20,6 +20,7 @@
 #include "ga-params.h"
 #include "ga-utils.h"
 #include "graph-parser.h"
+#include "mergesort.h"
 #include "selection.h"
 
 
@@ -31,13 +32,17 @@ int main(int argc, char** argv) {
                     crossover_start, crossover_stop,
                     mutation_start, mutation_stop,
                     fitness_start, fitness_stop,
-                    diversity_start, diversity_stop;
+                    diversity_start, diversity_stop,
+                    migration_start, migration_stop;
     double total_time = 0;
     double selection_time = 0;
     double crossover_time = 0;
     double mutation_time = 0;
     double fitness_time = 0;
     double diversity_time = 0;
+    double migration_time = 0;
+
+    int migration_count;
 
     if (argc != 2) {
         fprintf(stderr, "%s\n", "usage: gaa <graph_file>");
@@ -97,6 +102,17 @@ int main(int argc, char** argv) {
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fitness_stop);
     fitness_time += (fitness_stop.tv_sec - fitness_start.tv_sec) + 
                  (fitness_stop.tv_nsec - fitness_start.tv_nsec)/1e9;
+
+    // allocate and initialize memory needed for migration
+    int** sorted_indices_list = malloc(NUM_ISLANDS * sizeof(int*));
+    CHECK_MALLOC_ERR(sorted_indices_list);
+    for (int i=0; i<NUM_ISLANDS; i++) {
+        sorted_indices_list[i] = malloc(POP_SIZE * sizeof(int));
+        CHECK_MALLOC_ERR(sorted_indices_list[i]);
+        for (int j=0; j<POP_SIZE; j++) {
+            sorted_indices_list[i][j] = j;
+        }
+    }
     
     /* EVOLUTIONARY LOOP */
     for (int gen=0; gen<NUM_GENERATIONS; gen++) {
@@ -113,7 +129,7 @@ int main(int argc, char** argv) {
 
             for (int isl=0; isl<NUM_ISLANDS; isl++) {
                 diversity = calc_diversity(archipelago[isl], graph->v);
-                printf("%.3f", diversity);
+                printf("%.2f", diversity);
                 if (isl < NUM_ISLANDS-1)
                     printf(", ");
             }
@@ -124,6 +140,68 @@ int main(int argc, char** argv) {
             
             fflush(stdout);
         }
+
+        /* MIGRATION */
+        if (gen == 0) {
+            migration_count = 1;
+            assert(NUM_TO_MIGRATE <= POP_SIZE/2);
+        }
+        else if (gen%MIGRATION_PERIOD == 0) {
+
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &migration_start);
+
+            if (migration_count%NUM_ISLANDS == 0) {
+                migration_count = 1;
+            }
+
+            // sort the indicies for each island by fitness
+            for (int isl=0; isl<NUM_ISLANDS; isl++) {
+                mergesort_idv(sorted_indices_list[isl], 
+                              0, 
+                              POP_SIZE-1, 
+                              archipelago[isl]
+                             );
+            }
+
+            for (int isl=0; isl<NUM_ISLANDS; isl++) {
+
+                // migrate a top percentage of individuals migration_count 
+                // islands over from the current island, replacing the same
+                // worst percentage (ie top 5% replaces bottom 5%)
+                for (int idv=0; idv<NUM_TO_MIGRATE; idv++) {
+                    //printf("sender_isl: %d\n", isl);
+                    int recipient_isl = (isl + migration_count)%NUM_ISLANDS;
+                    //printf("recipient_isl: %d\n", recipient_isl);
+                    int idx_to_send = sorted_indices_list[isl][idv];
+                    //printf("idx_to_send: %d\n", idx_to_send);
+                    int idx_to_replace = 
+                            sorted_indices_list[recipient_isl][POP_SIZE-1-idv];
+                    /*printf(
+"Sending idv %3d on island %3d to replace idv %3d on island %3d\n", 
+                                    idx_to_send, 
+                                    isl, idx_to_replace, recipient_isl);
+                    */
+        
+                    // do the copy:
+                    archipelago[recipient_isl][idx_to_replace].fitness
+                            = archipelago[isl][idx_to_send].fitness;
+                    for (int i=0; i<RESERVE_BITS(graph->v); i++) {
+                        archipelago[recipient_isl][idx_to_replace].partition[i]
+                                = archipelago[isl][idx_to_send].partition[i];
+                    }
+                }
+                //printf("\n");
+                
+            }
+            //printf("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
+
+            migration_count++;
+
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &migration_stop);
+            migration_time += (migration_stop.tv_sec - migration_start.tv_sec) + 
+                    (migration_stop.tv_nsec - migration_start.tv_nsec)/1e9;
+
+        } /* END MIGRATION */
 
         // loop over each island
         for (int isl=0; isl<NUM_ISLANDS; isl++) {
@@ -310,6 +388,10 @@ int main(int argc, char** argv) {
            diversity_time,
            (diversity_time/total_time)*100
           );
+    printf("\tTime spent in migration: %8.2f sec (%4.1f%%)\n",
+           migration_time,
+           (migration_time/total_time)*100
+          );
 
     // free islands
     /*
@@ -320,6 +402,12 @@ int main(int argc, char** argv) {
         free(archipelago[i].migration_probs);
     }
     free(archipelago);*/
+
+    // Free memory used for migration
+    for (int isl=0; isl<NUM_ISLANDS; isl++) {
+        free(sorted_indices_list[isl]);
+    }
+    free(sorted_indices_list);
 
     // Free population on each island
     for (int isl=0; isl<NUM_ISLANDS; isl++) {
@@ -390,6 +478,7 @@ double calc_diversity(Individual* pop, int num_nodes) {
 
     return diversity/(POP_SIZE*(POP_SIZE-1));
 }
+
 
 /*
  * Calculates fitness of an individual with respect to the associated graph.

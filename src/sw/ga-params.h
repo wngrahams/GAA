@@ -16,17 +16,19 @@
 #define PUC_PROB 0.7
 #define TOURNAMENT_SELECT_PROB 0.75
 
-#define NUM_GENERATIONS 20
-#define POP_SIZE 20
+#define NUM_GENERATIONS 1000
+#define POP_SIZE 40
 
-#define NUM_ISLANDS 3
-#define MIGRATION_PERIOD 50
+#define NUM_ISLANDS 5
+#define MIGRATION_PERIOD 1
+#define NUM_TO_MIGRATE 2  // approximately 5%, must be less than half
 #define PROB_ISLAND_STAY 0.75
 #define PROB_ISLAND_MIGRATE (double)(1 - PROB_ISLAND_STAY)/(NUM_ISLANDS - 1)
 #define PROB_ISLAND_REWARD 0.05
 #define PROB_ISLAND_PENALTY 0.05
 
-#define DIVERSITY_PERIOD 10  // measure diversity every DIVERSITY_PERIOD gens
+#define DIVERSITY_PERIOD 25  // measure diversity every 
+                                           // DIVERSITY_PERIOD generations
 
 
 typedef struct Individual {
