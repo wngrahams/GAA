@@ -5,10 +5,14 @@
 #ifndef _MERGESORT_H_
 #define _MERGESORT_H_
 
+#define INSERTION_SORT_THRESHOLD 7  // max number of individuals to insertion
+                                    // sort instead of mergesort
+
 #include "ga-params.h"
 #include "ga-utils.h"
 
-static inline void _merge_idv(int* arr, int l, int r, Individual* pop) {
+
+static inline void _merge_idv(int* arr, int l, int m, int r, Individual* pop) {
     
     int i, j, k;
     int n1, n2;
@@ -81,7 +85,7 @@ static inline void insertionsort_idv(int* arr, int l, int r, Individual* pop) {
         key = pop[arr[i]].fitness;
         j = i-1;
 
-        while (j >= l && pop[arr[j]] > key) {
+        while (j >= l && pop[arr[j]].fitness  > key) {
             arr[j+1] = arr[j];
             j--;
         }
@@ -101,17 +105,17 @@ static inline void mergesort_idv(int* arr, int l, int r, Individual* pop) {
     
     if (l < r) {
         if ((r - l + 1) <= INSERTION_SORT_THRESHOLD) {
-            insertionsort_idv(a, l, r+1);
+            insertionsort_idv(arr, l, r+1, pop);
             return;
         }
         mid = (l+r)/2;  // not overflow safe (TODO)
 
         // recursively sort
-        mergesort_idv(a, l, mid);
-        mergesort_idv(a, mid+1, r);
+        mergesort_idv(arr, l, mid, pop);
+        mergesort_idv(arr, mid+1, r, pop);
 
         // merge
-        _merge_idv(a, l, mid, r);
+        _merge_idv(arr, l, mid, r, pop);
     }
 }
 
