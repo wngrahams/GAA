@@ -16,8 +16,8 @@ ifeq (${KERNELRELEASE},)
 	LDFLAGS = -g -L../../lib
 	LDLIBS  = -lllist
 
-	GAA_HEADERS := bitarray.h  crossover.h ga-params.h ga-utils.h graph-parser.h
-	GAA_HEADERS += mergesort.h selection.h
+	GAA_HEADERS := bitarray.h  crossover.h ga-params.h ga-utils.h graph.h 
+	GAA_HEADERS += graph-parser.h mergesort.h selection.h
 
 default: module GAA
 
@@ -31,7 +31,7 @@ clean:
 GAA: graph-parser.o
 
 GAA.o: $(GAA_HEADERS)
-graph-parser.o: ga-utils.h graph-parser.h
+graph-parser.o: ga-utils.h graph-parser.h graph.h
 
 .PHONY: all
 all: clean default
