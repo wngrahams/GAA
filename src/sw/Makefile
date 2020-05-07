@@ -1,10 +1,10 @@
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Darwin)
-	filename := Makefile-Darwin
+	filename := Makefile-$(UNAME)
 endif
 ifeq ($(UNAME), Linux)
-	filename := Makefile-Linux
+	filename := Makefile-$(UNAME)
 endif
 
 .PHONY: default
