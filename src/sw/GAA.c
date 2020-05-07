@@ -74,15 +74,15 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    set_input_values(&initial_inputs);
-    out = print_output_value();
+    set_input_values(&initial_inputs, gaa_fitness_fd);
+    out = print_output_value(gaa_fitness_fd);
     assert(out == 0xFF);
 
     for (i=0x00, j=0xF0; i<=0xF0 && j>=0x00; i++, j--) {
         current_inputs.p1 = i;
         current_inputs.p2 = j;
-        set_input_values(&current_inputs);
-        out = print_output_value();
+        set_input_values(&current_inputs, gaa_fitness_fd);
+        out = print_output_value(gaa_fitness_fd);
         //usleep(500000);
     }
 
@@ -621,7 +621,7 @@ uint8_t print_output_value(const int fd) {
 
     gaa_fitness_arg_t gaa_arg;
 
-    if (ioctl(fdm GAA_FITNESS_READ_OUTPUTS, &gaa_arg)) {
+    if (ioctl(fd, GAA_FITNESS_READ_OUTPUTS, &gaa_arg)) {
         perror("ioctl(GAA_FITNESS_READ_OUTPUTS) failed");
         return 0;
     }
