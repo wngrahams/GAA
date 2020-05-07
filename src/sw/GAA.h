@@ -11,9 +11,10 @@
 #include "ga-params.h"
 #include "graph.h"
 
-double calc_diversity(Individual*, int);
-int calc_fitness(Graph*, Individual*);
-void shuffle(int*, int);
+double calc_diversity (Individual*, int);
+int    calc_fitness   (Graph*, Individual*);
+void   init_population(Individual*, int);
+void   shuffle        (int*, int);
 
 #endif  /* _GAA_H */
 

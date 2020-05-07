@@ -55,10 +55,10 @@ static inline void roulette_wheel_selection(Individual* pop,
  */
 static inline int tournament_selection(Individual* pop) {
     
-    int parent1_idx = rand() % POP_SIZE;
+    int parent1_idx = urandint(POP_SIZE);
     int parent2_idx = -1;
     do {
-        parent2_idx = rand() % POP_SIZE;
+        parent2_idx = urandint(POP_SIZE);
     } while (parent2_idx == parent1_idx);  // ensures the parents are diffent
                                            // individuals
                                            
