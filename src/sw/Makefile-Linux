@@ -29,7 +29,7 @@ else
 default: module GAA
 
 module:
-	${MAKE} -C ${KERNEL_SOURCE} M=${PWD} modules_install
+	${MAKE} -C ${KERNEL_SOURCE} M=${PWD} modules
 
 clean:
 	${MAKE} -C ${KERNEL_SOURCE} M=${PWD} clean
