@@ -1,12 +1,12 @@
 /*
- * GAA.h
+ * GAA-sw.h
  *
- * Header file for GAA.c
+ * Header file for GAA-sw.c
  *
  */
 
-#ifndef _GAA_H_
-#define _GAA_H_
+#ifndef _GAA_SW_H_
+#define _GAA_SW_H_
 
 #include "ga-params.h"
 #include "graph.h"
@@ -16,5 +16,5 @@ int    calc_fitness   (Graph*, Individual*);
 void   init_population(Individual*, int);
 void   shuffle        (int*, int);
 
-#endif  /* _GAA_H */
+#endif  /* _GAA_SW_H */
 

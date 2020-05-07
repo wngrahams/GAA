@@ -1,24 +1,30 @@
 /*
- * GAA-sw.c
+ * GAA.c
  *
- * Graph partitioning using a genetic algorithm (SOFTWARE ONLY VERSION)
+ * Graph partitioning using a genetic algorithm with hardware acceleration
  *
  */
 
 #define _POSIX_C_SOURCE 199309L
 
-#include <assert.h>  // assert
-#include <limits.h>  // INT_MAX
-#include <stdio.h>   // printf
-#include <stdlib.h>  // malloc
-#include <string.h>  // memset
-#include <time.h>    // time
+#include <assert.h>     // assert
+#include <fcntl.h>
+#include <limits.h>     // INT_MAX
+#include <stdio.h>      // printf
+#include <stdlib.h>     // malloc
+#include <string.h>     // memset
+#include <sys/ioctl.h>  // ioctl
+#include <sys/types.h>
+#include <sys/stat.h>   
+#include <time.h>       // time
+#include <unistd.h>
 
 #include "bitarray.h"
 #include "crossover.h"
-#include "GAA-sw.h"
+#include "GAA.h"
 #include "ga-params.h"
 #include "ga-utils.h"
+#include "gaa_fitness_driver.h"
 #include "graph-parser.h"
 #include "mergesort.h"
 #include "selection.h"
@@ -48,6 +54,41 @@ int main(int argc, char** argv) {
         fprintf(stderr, "%s\n", "usage: gaa <graph_file>");
         exit(1);
     }
+
+    // TEST DRIVER
+    int gaa_fitness_fd;
+    gaa_fitness_arg_t gaa_arg;
+    uint8_t i, j, out;
+
+    static const char filename[] = "/dev/gaa_fitness";
+
+    static const gaa_fitness_inputs_t initial_inputs = { 0x0F , 0xF0 };
+
+    gaa_fitness_inputs_t current_inputs = {.p1 = initial_inputs.p1,
+                                         .p2 = initial_inputs.p2};
+
+    printf("GAA Fitness test beginning\n");
+
+    if ( (gaa_fitness_fd = open(filename, O_RDWR)) == -1) {
+        fprintf(stderr, "could not open %s\n", filename);
+        return -1;
+    }
+
+    set_input_values(&initial_inputs);
+    out = print_output_value();
+    assert(out == 0xFF);
+
+    for (i=0x00, j=0xF0; i<=0xF0 && j>=0x00; i++, j--) {
+        current_inputs.p1 = i;
+        current_inputs.p2 = j;
+        set_input_values(&current_inputs);
+        out = print_output_value();
+        //usleep(500000);
+    }
+
+    printf("GAA Fitness test finished\n");
+
+    // END TEST
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &total_start);
 
@@ -568,6 +609,40 @@ void shuffle(int *arr, int n) {
             arr[j] = arr[i];
             arr[i] = t;
         }
+    }
+}
+
+// FUNCTIONS FOR INTERACTING WITH GAA_FITNESS DEVICE DRIVER:
+
+/*
+ * Read and print output value
+ */
+uint8_t print_output_value(const int fd) {
+
+    gaa_fitness_arg_t gaa_arg;
+
+    if (ioctl(fdm GAA_FITNESS_READ_OUTPUTS, &gaa_arg)) {
+        perror("ioctl(GAA_FITNESS_READ_OUTPUTS) failed");
+        return 0;
+    }
+
+    printf("0x%X xor 0x%X = 0x%X\n",
+	       gaa_arg.inputs.p1, gaa_arg.inputs.p2, gaa_arg.outputs.p1xorp2);
+
+    return gaa_arg.outputs.p1xorp2;
+}
+
+/*
+ * Set the inputs
+ */
+void set_input_values(const gaa_fitness_inputs_t* i, const int fd) {
+
+    gaa_fitness_arg_t gaa_arg;
+    gaa_arg.inputs = *i;
+
+    if (ioctl(fd, GAA_FITNESS_WRITE_INPUTS, &gaa_arg)) {
+        perror("ioctl(GAA_FITNESS_WRITE_INPUTS) failed");
+        return;
     }
 }
 
