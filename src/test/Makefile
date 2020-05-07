@@ -1,7 +1,7 @@
 ifneq (${KERNELRELEASE},)
 
 # KERNELRELEASE defined: we are being compiled as part of the Kernel
-        obj-m := gaa_fitness.o
+        obj-m := gaa_fitness_driver.o
 
 else
 
