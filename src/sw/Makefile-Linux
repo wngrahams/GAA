@@ -1,4 +1,12 @@
-ifeq (${KERNELRELEASE},)
+ifneq (${KERNELRELEASE},)
+
+	# KERNELRELASE is defined, therefore the makefile was called from the
+	# kernel build system
+	
+		obj-m := gaa_fitness_driver.o
+
+else
+
 	# KERNELRELEASE is not defined, therefore makefile was called from command
 	# line
 	
@@ -35,12 +43,6 @@ graph-parser.o: ga-utils.h graph-parser.h graph.h
 
 .PHONY: all
 all: clean default
-
-else
-	# KERNELRELEASE is defined, therefore the makefile was called from the 
-	# kernel build system
-	
-	obj-m := gaa_fitness_driver.o
 
 endif
 
