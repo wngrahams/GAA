@@ -2,7 +2,7 @@ ifneq (${KERNELRELEASE},)
 
 	# KERNELRELASE is defined, therefore the makefile was called from the
 	# kernel build system
-    #obj-m := gaa_fitness_driver.o
+	# obj-m is set in Kbuild file (obj-m := gaa_fitness_driver.o)
 
 else
 
