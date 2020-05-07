@@ -14,7 +14,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "gaa_fitness.h"
+#include "gaa_fitness_driver.h"
 
 
 int gaa_fitness_fd;
