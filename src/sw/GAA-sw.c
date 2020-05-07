@@ -16,7 +16,7 @@
 
 #include "bitarray.h"
 #include "crossover.h"
-#include "GAA.h"
+#include "GAA-sw.h"
 #include "ga-params.h"
 #include "ga-utils.h"
 #include "graph-parser.h"

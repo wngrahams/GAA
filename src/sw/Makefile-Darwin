@@ -16,8 +16,8 @@ CXXFLAGS = -O0 -g -Wall -std=c++11 $(INCLUDES)
 LDFLAGS = -g -L../../lib 
 LDLIBS  = -lllist
 
-executables = GAA
-objects = GAA.o graph-parser.o
+executables = GAA-sw
+objects = GAA-sw.o graph-parser.o
 headers := ga-params.h ga-utils.h bitarray.h graph.h selection.h crossover.h
 headers += mergesort.h
 
