@@ -1,10 +1,10 @@
-// megafunction wizard: %RAM: 1-PORT%VBB%
+// megafunction wizard: %RAM: 1-PORT%
 // GENERATION: STANDARD
 // VERSION: WM1.0
 // MODULE: altsyncram 
 
 // ============================================================
-// File Name: idv_ram.v
+// File Name: idv_m10k.v
 // Megafunction Name(s):
 // 			altsyncram
 //
@@ -16,6 +16,7 @@
 //
 // 18.1.0 Build 625 09/12/2018 SJ Lite Edition
 // ************************************************************
+
 
 //Copyright (C) 2018  Intel Corporation. All rights reserved.
 //Your use of Intel Corporation's design tools, logic functions 
@@ -31,25 +32,77 @@
 //Intel and sold by Intel or its authorized distributors.  Please
 //refer to the applicable agreement for further details.
 
-module idv_ram (
+
+// synopsys translate_off
+`timescale 1 ps / 1 ps
+// synopsys translate_on
+module idv_m10k (
 	address,
+	clken,
 	clock,
 	data,
 	wren,
 	q);
 
 	input	[12:0]  address;
+	input	  clken;
 	input	  clock;
-	input	[0:0]  data;
+	input	[255:0]  data;
 	input	  wren;
-	output	[0:0]  q;
+	output	[255:0]  q;
 `ifndef ALTERA_RESERVED_QIS
 // synopsys translate_off
 `endif
+	tri1	  clken;
 	tri1	  clock;
 `ifndef ALTERA_RESERVED_QIS
 // synopsys translate_on
 `endif
+
+	wire [255:0] sub_wire0;
+	wire [255:0] q = sub_wire0[255:0];
+
+	altsyncram	altsyncram_component (
+				.address_a (address),
+				.clock0 (clock),
+				.clocken0 (clken),
+				.data_a (data),
+				.wren_a (wren),
+				.q_a (sub_wire0),
+				.aclr0 (1'b0),
+				.aclr1 (1'b0),
+				.address_b (1'b1),
+				.addressstall_a (1'b0),
+				.addressstall_b (1'b0),
+				.byteena_a (1'b1),
+				.byteena_b (1'b1),
+				.clock1 (1'b1),
+				.clocken1 (1'b1),
+				.clocken2 (1'b1),
+				.clocken3 (1'b1),
+				.data_b (1'b1),
+				.eccstatus (),
+				.q_b (),
+				.rden_a (1'b1),
+				.rden_b (1'b1),
+				.wren_b (1'b0));
+	defparam
+		altsyncram_component.clock_enable_input_a = "NORMAL",
+		altsyncram_component.clock_enable_output_a = "BYPASS",
+		altsyncram_component.intended_device_family = "Cyclone V",
+		altsyncram_component.lpm_hint = "ENABLE_RUNTIME_MOD=NO",
+		altsyncram_component.lpm_type = "altsyncram",
+		altsyncram_component.numwords_a = 8192,
+		altsyncram_component.operation_mode = "SINGLE_PORT",
+		altsyncram_component.outdata_aclr_a = "NONE",
+		altsyncram_component.outdata_reg_a = "UNREGISTERED",
+		altsyncram_component.power_up_uninitialized = "TRUE",
+		altsyncram_component.ram_block_type = "M10K",
+		altsyncram_component.read_during_write_mode_port_a = "DONT_CARE",
+		altsyncram_component.widthad_a = 13,
+		altsyncram_component.width_a = 256,
+		altsyncram_component.width_byteena_a = 1;
+
 
 endmodule
 
@@ -64,9 +117,9 @@ endmodule
 // Retrieval info: PRIVATE: BYTE_ENABLE NUMERIC "0"
 // Retrieval info: PRIVATE: BYTE_SIZE NUMERIC "8"
 // Retrieval info: PRIVATE: BlankMemory NUMERIC "1"
-// Retrieval info: PRIVATE: CLOCK_ENABLE_INPUT_A NUMERIC "0"
+// Retrieval info: PRIVATE: CLOCK_ENABLE_INPUT_A NUMERIC "1"
 // Retrieval info: PRIVATE: CLOCK_ENABLE_OUTPUT_A NUMERIC "0"
-// Retrieval info: PRIVATE: Clken NUMERIC "0"
+// Retrieval info: PRIVATE: Clken NUMERIC "1"
 // Retrieval info: PRIVATE: DataBusSeparated NUMERIC "1"
 // Retrieval info: PRIVATE: IMPLEMENT_IN_LES NUMERIC "0"
 // Retrieval info: PRIVATE: INIT_FILE_LAYOUT STRING "PORT_A"
@@ -87,10 +140,10 @@ endmodule
 // Retrieval info: PRIVATE: UseDQRAM NUMERIC "1"
 // Retrieval info: PRIVATE: WRCONTROL_ACLR_A NUMERIC "0"
 // Retrieval info: PRIVATE: WidthAddr NUMERIC "13"
-// Retrieval info: PRIVATE: WidthData NUMERIC "1"
+// Retrieval info: PRIVATE: WidthData NUMERIC "256"
 // Retrieval info: PRIVATE: rden NUMERIC "0"
 // Retrieval info: LIBRARY: altera_mf altera_mf.altera_mf_components.all
-// Retrieval info: CONSTANT: CLOCK_ENABLE_INPUT_A STRING "BYPASS"
+// Retrieval info: CONSTANT: CLOCK_ENABLE_INPUT_A STRING "NORMAL"
 // Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
 // Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone V"
 // Retrieval info: CONSTANT: LPM_HINT STRING "ENABLE_RUNTIME_MOD=NO"
@@ -103,22 +156,24 @@ endmodule
 // Retrieval info: CONSTANT: RAM_BLOCK_TYPE STRING "M10K"
 // Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_PORT_A STRING "DONT_CARE"
 // Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "13"
-// Retrieval info: CONSTANT: WIDTH_A NUMERIC "1"
+// Retrieval info: CONSTANT: WIDTH_A NUMERIC "256"
 // Retrieval info: CONSTANT: WIDTH_BYTEENA_A NUMERIC "1"
 // Retrieval info: USED_PORT: address 0 0 13 0 INPUT NODEFVAL "address[12..0]"
+// Retrieval info: USED_PORT: clken 0 0 0 0 INPUT VCC "clken"
 // Retrieval info: USED_PORT: clock 0 0 0 0 INPUT VCC "clock"
-// Retrieval info: USED_PORT: data 0 0 1 0 INPUT NODEFVAL "data[0..0]"
-// Retrieval info: USED_PORT: q 0 0 1 0 OUTPUT NODEFVAL "q[0..0]"
+// Retrieval info: USED_PORT: data 0 0 256 0 INPUT NODEFVAL "data[255..0]"
+// Retrieval info: USED_PORT: q 0 0 256 0 OUTPUT NODEFVAL "q[255..0]"
 // Retrieval info: USED_PORT: wren 0 0 0 0 INPUT NODEFVAL "wren"
 // Retrieval info: CONNECT: @address_a 0 0 13 0 address 0 0 13 0
 // Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
-// Retrieval info: CONNECT: @data_a 0 0 1 0 data 0 0 1 0
+// Retrieval info: CONNECT: @clocken0 0 0 0 0 clken 0 0 0 0
+// Retrieval info: CONNECT: @data_a 0 0 256 0 data 0 0 256 0
 // Retrieval info: CONNECT: @wren_a 0 0 0 0 wren 0 0 0 0
-// Retrieval info: CONNECT: q 0 0 1 0 @q_a 0 0 1 0
-// Retrieval info: GEN_FILE: TYPE_NORMAL idv_ram.v TRUE
-// Retrieval info: GEN_FILE: TYPE_NORMAL idv_ram.inc FALSE
-// Retrieval info: GEN_FILE: TYPE_NORMAL idv_ram.cmp FALSE
-// Retrieval info: GEN_FILE: TYPE_NORMAL idv_ram.bsf FALSE
-// Retrieval info: GEN_FILE: TYPE_NORMAL idv_ram_inst.v FALSE
-// Retrieval info: GEN_FILE: TYPE_NORMAL idv_ram_bb.v TRUE
+// Retrieval info: CONNECT: q 0 0 256 0 @q_a 0 0 256 0
+// Retrieval info: GEN_FILE: TYPE_NORMAL idv_m10k.v TRUE
+// Retrieval info: GEN_FILE: TYPE_NORMAL idv_m10k.inc FALSE
+// Retrieval info: GEN_FILE: TYPE_NORMAL idv_m10k.cmp FALSE
+// Retrieval info: GEN_FILE: TYPE_NORMAL idv_m10k.bsf FALSE
+// Retrieval info: GEN_FILE: TYPE_NORMAL idv_m10k_inst.v FALSE
+// Retrieval info: GEN_FILE: TYPE_NORMAL idv_m10k_bb.v TRUE
 // Retrieval info: LIB_FILE: altera_mf
