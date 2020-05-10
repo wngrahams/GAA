@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
     // TEST DRIVER
     int gaa_fitness_fd;
     gaa_fitness_arg_t gaa_arg;
-    uint8_t i, j, out;
+    uint8_t _i, _j, out;
 
     static const char filename[] = "/dev/gaa_fitness";
 
@@ -93,9 +93,9 @@ int main(int argc, char** argv) {
     out = print_output_value(gaa_fitness_fd);
     assert(out == 0xFF);
 
-    for (i=0x00, j=0x0F; i<=0x0F && j>=0x00; i++, j--) {
-        current_inputs.p1 = i;
-        current_inputs.p2 = j;
+    for (_i=0x00, _j=0x0F; _i<=0x0F && _j>=0x00; _i++, _j--) {
+        current_inputs.p1 = _i;
+        current_inputs.p2 = _j;
         set_input_values(&current_inputs, gaa_fitness_fd);
         out = print_output_value(gaa_fitness_fd);
         //usleep(500000);
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
-    for (int i=0; i<5; i++) {
+    for (uint32_t i=0; i<5; i++) {
         *(sdram_ptr + i) = i;
         sleep(1);
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
