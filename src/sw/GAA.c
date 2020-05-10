@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
     sdram_ptr = (uint32_t*)sdram_mem;
     
     // write to sdram:
-    printf("Writing to SDRAM:\n")
+    printf("Writing to SDRAM:\n");
     for (int i=0; i<5; i++) {
         *(sdram_ptr + i) = i;
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
