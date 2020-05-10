@@ -41,14 +41,6 @@
          type = "int";
       }
    }
-   element pll_0
-   {
-      datum _sortIndex
-      {
-         value = "4";
-         type = "int";
-      }
-   }
    element sdram_controller_0
    {
       datum _sortIndex
@@ -81,6 +73,14 @@
          type = "String";
       }
    }
+   element sys_sdram_pll_0
+   {
+      datum _sortIndex
+      {
+         value = "4";
+         type = "int";
+      }
+   }
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
@@ -95,7 +95,7 @@
  <parameter name="hideFromIPCatalog" value="false" />
  <parameter name="lockedInterfaceDefinition" value="" />
  <parameter name="maxAdditionalLatency" value="1" />
- <parameter name="projectName" value="soc_system.qpf" />
+ <parameter name="projectName" value="" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
  <parameter name="testBenchDutName" value="" />
@@ -104,8 +104,8 @@
  <instanceScript></instanceScript>
  <interface name="clk" internal="clk_0.clk_in" type="clock" dir="end" />
  <interface
-   name="clk100_shifted"
-   internal="pll_0.clk_100_shifted"
+   name="clk_100_shifted"
+   internal="sys_sdram_pll_0.sdram_clk"
    type="clock"
    dir="start" />
  <interface name="hps" internal="hps_0.hps_io" type="conduit" dir="end" />
@@ -219,7 +219,7 @@
   <parameter name="ENABLE_USER_ECC" value="false" />
   <parameter name="EXPORT_AFI_HALF_CLK" value="false" />
   <parameter name="EXTRA_SETTINGS" value="" />
-  <parameter name="F2H_AXI_CLOCK_FREQ" value="50000000" />
+  <parameter name="F2H_AXI_CLOCK_FREQ" value="100000000" />
   <parameter name="F2H_SDRAM0_CLOCK_FREQ" value="100" />
   <parameter name="F2H_SDRAM1_CLOCK_FREQ" value="100" />
   <parameter name="F2H_SDRAM2_CLOCK_FREQ" value="100" />
@@ -274,10 +274,10 @@
   <parameter name="FPGA_PERIPHERAL_OUTPUT_CLOCK_FREQ_SPIM1_SCLK_OUT" value="100" />
   <parameter name="GPIO_Enable">No,No,No,No,No,No,No,No,No,Yes,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,Yes,No,No,No,No,Yes,No,No,No,No,No,No,No,Yes,No,No,No,No,Yes,Yes,No,No,No,No,No,No,Yes,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No</parameter>
   <parameter name="GP_Enable" value="false" />
-  <parameter name="H2F_AXI_CLOCK_FREQ" value="50000000" />
+  <parameter name="H2F_AXI_CLOCK_FREQ" value="100000000" />
   <parameter name="H2F_CTI_CLOCK_FREQ" value="100" />
   <parameter name="H2F_DEBUG_APB_CLOCK_FREQ" value="100" />
-  <parameter name="H2F_LW_AXI_CLOCK_FREQ" value="50000000" />
+  <parameter name="H2F_LW_AXI_CLOCK_FREQ" value="100000000" />
   <parameter name="H2F_TPIU_CLOCK_IN_FREQ" value="100" />
   <parameter name="HARD_EMIF" value="true" />
   <parameter name="HCX_COMPAT_MODE" value="false" />
@@ -653,7 +653,6 @@
   <parameter name="usb_mp_clk_div" value="0" />
   <parameter name="use_default_mpu_clk" value="true" />
  </module>
- <module name="pll_0" kind="pll" version="1.0" enabled="1" />
  <module
    name="sdram_controller_0"
    kind="altera_avalon_new_sdram_controller"
@@ -683,6 +682,22 @@
   <parameter name="registerDataIn" value="true" />
   <parameter name="rowWidth" value="13" />
  </module>
+ <module
+   name="sys_sdram_pll_0"
+   kind="altera_up_avalon_sys_sdram_pll"
+   version="18.0"
+   enabled="1">
+  <parameter name="AUTO_DEVICE" value="5CSEMA5F31C6" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
+  <parameter name="CIII_boards" value="DE0" />
+  <parameter name="CIV_boards" value="DE2-115" />
+  <parameter name="CV_boards" value="DE1-SoC" />
+  <parameter name="MAX10_boards" value="DE10-Lite" />
+  <parameter name="device_family" value="Cyclone V" />
+  <parameter name="gui_outclk" value="100.0" />
+  <parameter name="gui_refclk" value="50.0" />
+  <parameter name="other_boards" value="None" />
+ </module>
  <connection
    kind="avalon"
    version="18.1"
@@ -705,39 +720,47 @@
    kind="clock"
    version="18.1"
    start="clk_0.clk"
+   end="sys_sdram_pll_0.ref_clk" />
+ <connection
+   kind="clock"
+   version="18.1"
+   start="sys_sdram_pll_0.sys_clk"
+   end="sdram_controller_0.clk" />
+ <connection
+   kind="clock"
+   version="18.1"
+   start="sys_sdram_pll_0.sys_clk"
    end="gaa_fitness_0.clock" />
  <connection
    kind="clock"
    version="18.1"
-   start="clk_0.clk"
+   start="sys_sdram_pll_0.sys_clk"
    end="hps_0.f2h_axi_clock" />
  <connection
    kind="clock"
    version="18.1"
-   start="clk_0.clk"
+   start="sys_sdram_pll_0.sys_clk"
    end="hps_0.h2f_axi_clock" />
  <connection
    kind="clock"
    version="18.1"
-   start="clk_0.clk"
+   start="sys_sdram_pll_0.sys_clk"
    end="hps_0.h2f_lw_axi_clock" />
- <connection kind="clock" version="18.1" start="clk_0.clk" end="pll_0.refclk" />
- <connection
-   kind="clock"
-   version="18.1"
-   start="pll_0.clk_100"
-   end="sdram_controller_0.clk" />
  <connection
    kind="reset"
    version="18.1"
    start="clk_0.clk_reset"
-   end="gaa_fitness_0.reset" />
+   end="sys_sdram_pll_0.ref_reset" />
  <connection
    kind="reset"
    version="18.1"
    start="clk_0.clk_reset"
    end="sdram_controller_0.reset" />
- <connection kind="reset" version="18.1" start="clk_0.clk_reset" end="pll_0.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="sys_sdram_pll_0.reset_source"
+   end="gaa_fitness_0.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
  <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
