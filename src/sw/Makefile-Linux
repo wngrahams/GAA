@@ -17,8 +17,8 @@ else
 
 	INCLUDES = -I../../lib
 
-	CFLAGS   = -O3 -g -Wall -std=c99   $(INCLUDES)
-	CXXFLAGS = -O3 -g -Wall -std=c++11 $(INCLUDES)
+	CFLAGS   = -O0 -g -Wall -std=c99   $(INCLUDES)
+	CXXFLAGS = -O0 -g -Wall -std=c++11 $(INCLUDES)
 
 	LDFLAGS = -g -L../../lib
 	LDLIBS  = -lllist
