@@ -33,6 +33,16 @@
 #define SDRAM_ADDR 0xC0000000
 #define SDRAM_SPAN 0x04000000  // 64 MB of SDRAM from 0xC0000000 to 0xC3FFFFFF
 
+int mmap_fd;                   // file descriptor for /dev/mem
+void* sdram_mem;               // void* pointer to base of sdram
+
+volatile uint32_t *sdram_ptr = NULL;  // pointer to data in sdram
+                                          // We store the edges as two 32-bit 
+                                          // nodes, so this indexes the 
+                                          // individual nodes of an edge.
+                                          // Must be volatile, since the data 
+                                          // in the sdram may change outside of
+                                          // this userspace program.
 
 int main(int argc, char** argv) {
 
@@ -54,16 +64,7 @@ int main(int argc, char** argv) {
 
     int migration_count;
 
-    int mmap_fd;                   // file descriptor for /dev/mem
-    void* sdram_mem;               // void* pointer to base of sdram
-
-    volatile uint32_t *sdram_ptr = NULL;  // pointer to data in sdram
-                                          // We store the edges as two 32-bit 
-                                          // nodes, so this indexes the 
-                                          // individual nodes of an edge.
-                                          // Must be volatile, since the data 
-                                          // in the sdram may change outside of
-                                          // this userspace program.
+    
 
     if (argc != 2) {
         fprintf(stderr, "%s\n", "usage: gaa <graph_file>");
