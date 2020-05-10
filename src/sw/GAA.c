@@ -36,7 +36,7 @@
 int mmap_fd;                   // file descriptor for /dev/mem
 void* sdram_mem;               // void* pointer to base of sdram
 
-volatile uint32_t *sdram_ptr = NULL;  // pointer to data in sdram
+volatile uint16_t *sdram_ptr = NULL;  // pointer to data in sdram
                                           // We store the edges as two 32-bit 
                                           // nodes, so this indexes the 
                                           // individual nodes of an edge.
@@ -120,11 +120,11 @@ int main(int argc, char** argv) {
     // mmap file descriptor is no longer needed and can be closed
     close(mmap_fd);
 
-    sdram_ptr = (uint32_t*)(sdram_mem);
+    sdram_ptr = (uint16_t*)(sdram_mem);
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
-    for (uint32_t i=0; i<5; i++) {
+    for (uint16_t i=0; i<5; i++) {
         *(sdram_ptr + i) = i;
         sleep(1);
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
