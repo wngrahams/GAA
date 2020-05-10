@@ -31,7 +31,7 @@
 #include "selection.h"
 
 #define SDRAM_ADDR 0xC0000000
-#define SDRAM_SPAN 0x03FFFFFF  // 64 MB of SDRAM from 0xC0000000 to 0xC3FFFFFF
+#define SDRAM_SPAN 0x04000000  // 64 MB of SDRAM from 0xC0000000 to 0xC3FFFFFF
 
 
 int main(int argc, char** argv) {
@@ -57,13 +57,13 @@ int main(int argc, char** argv) {
     int mmap_fd;                   // file descriptor for /dev/mem
     void* sdram_mem;               // void* pointer to base of sdram
 
-    volatile uint32_t* sdram_ptr;  // pointer to data in sdram
-                                   // We store the edges as two 32-bit nodes,
-                                   // so this indexes the individual nodes of
-                                   // an edge.
-                                   // Must be volatile, since the data in the
-                                   // sdram may change outside of this 
-                                   // userspace program.
+    volatile uint32_t* sdram_ptr = NULL;  // pointer to data in sdram
+                                          // We store the edges as two 32-bit 
+                                          // nodes, so this indexes the 
+                                          // individual nodes of an edge.
+                                          // Must be volatile, since the data 
+                                          // in the sdram may change outside of
+                                          // this userspace program.
 
     if (argc != 2) {
         fprintf(stderr, "%s\n", "usage: gaa <graph_file>");
@@ -102,9 +102,11 @@ int main(int argc, char** argv) {
     }
 
     printf("Testing mmap of FPGA SDRAM:\n");
+
+    // open memory with uncached access:
     if((mmap_fd = open("/dev/mem", (O_RDWR | O_SYNC))) == -1) {
         printf("ERROR: could not open \"/dev/mem\"...\n");
-        return(1);
+        exit(1);
     }
     // mmap(addr, length, prot, flags, fd, offset);
     sdram_mem = mmap(0, SDRAM_SPAN, (PROT_READ|PROT_WRITE), MAP_SHARED, 
@@ -121,7 +123,7 @@ int main(int argc, char** argv) {
     
     // write to sdram:
     for (int i=0; i<5; i++) {
-        *(sdram_ptr + i) = (uint32_t)i;
+        (sdram_ptr + i) = (uint32_t*)i;
     }
 
     // read from sdram:
