@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
     printf("Writing to SDRAM:\n");
     for (int i=0; i<5; i++) {
         *(sdram_ptr + i) = i;
-        usleep(100);
+        sleep(1);
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
 
     }
