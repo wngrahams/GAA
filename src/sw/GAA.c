@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
     
     // write to sdram:
     for (int i=0; i<5; i++) {
-        (sdram_ptr + i) = (uint32_t*)i;
+        *(sdram_ptr + i) = i;
     }
 
     // read from sdram:
