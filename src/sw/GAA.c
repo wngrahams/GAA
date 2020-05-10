@@ -57,13 +57,13 @@ int main(int argc, char** argv) {
     int mmap_fd;                   // file descriptor for /dev/mem
     void* sdram_mem;               // void* pointer to base of sdram
 
-    volatile uint32_t * sdram_ptr = NULL;  // pointer to data in sdram
-                                           // We store the edges as two 32-bit 
-                                           // nodes, so this indexes the 
-                                           // individual nodes of an edge.
-                                           // Must be volatile, since the data 
-                                           // in the sdram may change outside of
-                                           // this userspace program.
+    volatile uint32_t *sdram_ptr = NULL;  // pointer to data in sdram
+                                          // We store the edges as two 32-bit 
+                                          // nodes, so this indexes the 
+                                          // individual nodes of an edge.
+                                          // Must be volatile, since the data 
+                                          // in the sdram may change outside of
+                                          // this userspace program.
 
     if (argc != 2) {
         fprintf(stderr, "%s\n", "usage: gaa <graph_file>");
@@ -119,12 +119,13 @@ int main(int argc, char** argv) {
     // mmap file descriptor is no longer needed and can be closed
     close(mmap_fd);
 
-    sdram_ptr = (uint32_t*)sdram_mem;
+    sdram_ptr = (uint32_t*)(sdram_mem);
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
     for (int i=0; i<5; i++) {
         *(sdram_ptr + i) = i;
+        usleep(100);
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
 
     }
