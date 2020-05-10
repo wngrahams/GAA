@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
         //usleep(500000);
     }
 
-    printf("Testing mmap of FPGA SDRAM:\n")
+    printf("Testing mmap of FPGA SDRAM:\n");
     if((mmap_fd = open("/dev/mem", (O_RDWR | O_SYNC))) == -1) {
         printf("ERROR: could not open \"/dev/mem\"...\n");
         return(1);
