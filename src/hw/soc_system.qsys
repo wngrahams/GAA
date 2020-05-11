@@ -95,7 +95,7 @@
  <parameter name="hideFromIPCatalog" value="false" />
  <parameter name="lockedInterfaceDefinition" value="" />
  <parameter name="maxAdditionalLatency" value="1" />
- <parameter name="projectName" value="" />
+ <parameter name="projectName" value="soc_system.qpf" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
  <parameter name="testBenchDutName" value="" />
@@ -112,7 +112,7 @@
  <interface name="hps_ddr3" internal="hps_0.memory" type="conduit" dir="end" />
  <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
  <interface
-   name="sdram_controller_0_wire"
+   name="sdram_control"
    internal="sdram_controller_0.wire"
    type="conduit"
    dir="end" />
@@ -754,13 +754,13 @@
  <connection
    kind="reset"
    version="18.1"
-   start="clk_0.clk_reset"
-   end="sdram_controller_0.reset" />
+   start="sys_sdram_pll_0.reset_source"
+   end="gaa_fitness_0.reset" />
  <connection
    kind="reset"
    version="18.1"
    start="sys_sdram_pll_0.reset_source"
-   end="gaa_fitness_0.reset" />
+   end="sdram_controller_0.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
  <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
