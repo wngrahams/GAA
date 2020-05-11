@@ -131,6 +131,7 @@ int main(int argc, char** argv) {
     // clear sdram:
     // (each egde in hardware is two 32 bit node indices)
     printf("Clearing SDRAM... ");
+    fflush(stdout);
     for (int i=0; i<MAX_NUM_EDGES*2; i++) {
         *(sdram_ptr + i) = (uint32_t)0; 
     }
