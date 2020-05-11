@@ -33,7 +33,7 @@
 #define SDRAM_ADDR 0xC0000000
 #define SDRAM_SPAN 0x04000000  // 64 MB of SDRAM from 0xC0000000 to 0xC3FFFFFF
 
-#define MAX_NUM_EDGES (SDRAM_SPAN/sizeof(uint32_t)*2)
+#define MAX_NUM_EDGES (SDRAM_SPAN/(sizeof(uint32_t)*2))
 #define MAX_NUM_NODES 0xFFFFFFFF
 
 
@@ -123,6 +123,10 @@ int main(int argc, char** argv) {
     close(mmap_fd);
 
     sdram_ptr = (uint32_t*)(sdram_mem);
+
+    printf("Hardware Constraints:\n");
+    printf("\tMax number of edges: %d\n", MAX_NUM_EDGES);
+    printf("\tMax number of nodes: %d\n", MAX_NUM_NODES);
 
     // clear sdram:
     // (each egde in hardware is two 32 bit node indices)
