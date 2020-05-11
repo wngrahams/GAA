@@ -125,8 +125,8 @@ int main(int argc, char** argv) {
     sdram_ptr = (uint32_t*)(sdram_mem);
 
     printf("Hardware Constraints:\n");
-    printf("\tMax number of edges: %d\n", MAX_NUM_EDGES);
-    printf("\tMax number of nodes: %d\n", MAX_NUM_NODES);
+    printf("\tMax number of edges: %u\n", MAX_NUM_EDGES);
+    printf("\tMax number of nodes: %u\n", MAX_NUM_NODES);
 
     // clear sdram:
     // (each egde in hardware is two 32 bit node indices)
