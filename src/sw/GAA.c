@@ -14,6 +14,7 @@
 #include <stdlib.h>     // malloc
 #include <string.h>     // memset
 #include <sys/ioctl.h>  // ioctl
+#include <sys/mman.h>   // mmap
 #include <sys/types.h>
 #include <sys/stat.h>   
 #include <time.h>       // time
@@ -29,6 +30,19 @@
 #include "mergesort.h"
 #include "selection.h"
 
+#define SDRAM_ADDR 0xC0000000
+#define SDRAM_SPAN 0x04000000  // 64 MB of SDRAM from 0xC0000000 to 0xC3FFFFFF
+
+int mmap_fd;                   // file descriptor for /dev/mem
+void* sdram_mem;               // void* pointer to base of sdram
+
+volatile uint16_t *sdram_ptr = NULL;  // pointer to data in sdram
+                                          // We store the edges as two 32-bit 
+                                          // nodes, so this indexes the 
+                                          // individual nodes of an edge.
+                                          // Must be volatile, since the data 
+                                          // in the sdram may change outside of
+                                          // this userspace program.
 
 int main(int argc, char** argv) {
 
@@ -50,6 +64,8 @@ int main(int argc, char** argv) {
 
     int migration_count;
 
+    
+
     if (argc != 2) {
         fprintf(stderr, "%s\n", "usage: gaa <graph_file>");
         exit(1);
@@ -58,7 +74,7 @@ int main(int argc, char** argv) {
     // TEST DRIVER
     int gaa_fitness_fd;
     gaa_fitness_arg_t gaa_arg;
-    uint8_t i, j, out;
+    uint8_t _i, _j, out;
 
     static const char filename[] = "/dev/gaa_fitness";
 
@@ -78,13 +94,51 @@ int main(int argc, char** argv) {
     out = print_output_value(gaa_fitness_fd);
     assert(out == 0xFF);
 
-    for (i=0x00, j=0xF0; i<=0xF0 && j>=0x00; i++, j--) {
-        current_inputs.p1 = i;
-        current_inputs.p2 = j;
+    for (_i=0x00, _j=0x0F; _i<=0x0F && _j>=0x00; _i++, _j--) {
+        current_inputs.p1 = _i;
+        current_inputs.p2 = _j;
         set_input_values(&current_inputs, gaa_fitness_fd);
         out = print_output_value(gaa_fitness_fd);
         //usleep(500000);
     }
+
+    printf("Testing mmap of FPGA SDRAM:\n");
+
+    // open memory with uncached access:
+    if((mmap_fd = open("/dev/mem", (O_RDWR | O_SYNC))) == -1) {
+        printf("ERROR: could not open \"/dev/mem\"...\n");
+        exit(1);
+    }
+    // mmap(addr, length, prot, flags, fd, offset);
+    sdram_mem = mmap(0, SDRAM_SPAN, (PROT_READ|PROT_WRITE), MAP_SHARED, 
+                     mmap_fd, SDRAM_ADDR);
+    if (MAP_FAILED == sdram_mem) {
+        fprintf(stderr, "MMAP FAILED\n");
+        exit(1);
+    }
+
+    // mmap file descriptor is no longer needed and can be closed
+    close(mmap_fd);
+
+    sdram_ptr = (uint16_t*)(sdram_mem);
+    
+    // write to sdram:
+    printf("Writing to SDRAM:\n");
+    for (uint16_t i=0; i<5; i++) {
+        *(sdram_ptr + i) = i;
+        sleep(1);
+        printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
+
+    }
+
+    // read from sdram:
+    printf("Reading from SDRAM:\n");
+    for (int i=0; i<5; i++) {
+        printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
+    }
+
+    // unmap mapped memory
+    munmap(sdram_mem, SDRAM_SPAN);
 
     printf("GAA Fitness test finished\n");
 
