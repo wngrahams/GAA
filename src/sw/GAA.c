@@ -34,7 +34,7 @@
 #define SDRAM_SPAN 0x04000000  // 64 MB of SDRAM from 0xC0000000 to 0xC3FFFFFF
 
 #define MAX_NUM_EDGES (SDRAM_SPAN/(sizeof(uint32_t)*2))
-#define MAX_NUM_NODES 0xFFFFFFFF
+#define MAX_NUM_NODES (uint32_t)0xFFFFFFFF
 
 
 int main(int argc, char** argv) {
@@ -130,14 +130,16 @@ int main(int argc, char** argv) {
 
     // clear sdram:
     // (each egde in hardware is two 32 bit node indices)
+    printf("Clearing SDRAM... ");
     for (int i=0; i<MAX_NUM_EDGES*2; i++) {
         *(sdram_ptr + i) = (uint32_t)0; 
     }
+    printf("Done.\n");
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
     for (uint32_t i=0; i<5; i++) {
-        printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
+        printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), i);
         *(sdram_ptr + i) = i;
     }
 
