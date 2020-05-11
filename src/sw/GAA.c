@@ -33,10 +33,15 @@
 #define SDRAM_ADDR 0xC0000000
 #define SDRAM_SPAN 0x04000000  // 64 MB of SDRAM from 0xC0000000 to 0xC3FFFFFF
 
+#define MAX_NUM_EDGES (SDRAM_SPAN/sizeof(uint32_t)*2)
+#define MAX_NUM_NODES 0xFFFFFFFF
+
 
 int main(int argc, char** argv) {
 
     Graph* graph;
+    unsigned int max_num_edges;
+    unsigned int max_num_nodes;
     struct timespec total_start, total_stop, 
                     selection_start, selection_stop,
                     crossover_start, crossover_stop,
@@ -120,6 +125,12 @@ int main(int argc, char** argv) {
     close(mmap_fd);
 
     sdram_ptr = (uint32_t*)(sdram_mem);
+
+    // clear sdram:
+    // (each egde in hardware is two 32 bit node indices)
+    for (int i=0; i<MAX_NUM_EDGES*2; i++) {
+        *(sdram_ptr + i) = (uint32_t)0; 
+    }
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
@@ -150,6 +161,12 @@ int main(int argc, char** argv) {
     // parse graph from file specified on command line
     if (!parse_graph_from_file(argv[1], graph)) {
         goto cleanup_graph;
+    }
+
+    if (graph->v > MAX_NUM_NODES || graph->e > MAX_NUM_EDGES) {
+        printf("Graph size is not within the constraints of the hardware.");
+        printf(" Exiting...\n");
+        goto gleanup_graph;
     }
     
     // seed random number generator
