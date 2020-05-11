@@ -40,8 +40,6 @@
 int main(int argc, char** argv) {
 
     Graph* graph;
-    unsigned int max_num_edges;
-    unsigned int max_num_nodes;
     struct timespec total_start, total_stop, 
                     selection_start, selection_stop,
                     crossover_start, crossover_stop,
@@ -166,7 +164,7 @@ int main(int argc, char** argv) {
     if (graph->v > MAX_NUM_NODES || graph->e > MAX_NUM_EDGES) {
         printf("Graph size is not within the constraints of the hardware.");
         printf(" Exiting...\n");
-        goto gleanup_graph;
+        goto cleanup_graph;
     }
     
     // seed random number generator
