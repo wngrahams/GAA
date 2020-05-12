@@ -137,6 +137,7 @@ int main(int argc, char** argv) {
     printf("Reading from SDRAM:\n");
     for (int i=0; i<5; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
+        sleep(1);
     }
 
     if ( (gaa_fitness_fd = open(filename, O_RDWR)) == -1) {
