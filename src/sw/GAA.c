@@ -122,20 +122,20 @@ int main(int argc, char** argv) {
     printf("Done.\n");
 
     printf("Reading cleared SDRAM:\n");
-    for (uint8_t i=0; i<5; i++) {
+    for (uint8_t i=0; i<10; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
     }
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
-    for (uint8_t i=0; i<5; i++) {
+    for (uint8_t i=0; i<10; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), i);
         *(sdram_ptr + i) = i;
     }
 
     // read from sdram:
     printf("Reading from SDRAM:\n");
-    for (int i=0; i<5; i++) {
+    for (int i=0; i<10; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
         sleep(1);
     }
@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
     }
 
     //set_input_values(&initial_inputs, gaa_fitness_fd);
-    out = print_output_value(gaa_fitness_fd);
+    //out = print_output_value(gaa_fitness_fd);
     //assert(out == 0xFF);
 
     /*
