@@ -120,6 +120,12 @@ int main(int argc, char** argv) {
         *(sdram_ptr + i) = (uint16_t)0; 
     }
     printf("Done.\n");
+
+    printf("Reading cleared SDRAM:\n");
+    for (uint16_t i=0; i<5; i++);
+    {
+        printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
+    }
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
