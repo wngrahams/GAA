@@ -25,7 +25,7 @@
          type = "int";
       }
    }
-   element gaa_fitness_0.avalon_slave_0
+   element gaa_fitness_0.hps_slave
    {
       datum baseAddress
       {
@@ -51,9 +51,22 @@
    }
    element sdram_controller_0.s1
    {
+      datum _lockedAddress
+      {
+         value = "0";
+         type = "boolean";
+      }
       datum baseAddress
       {
          value = "0";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
          type = "String";
       }
    }
@@ -702,7 +715,7 @@
    kind="avalon"
    version="18.1"
    start="hps_0.h2f_axi_master"
-   end="gaa_fitness_0.avalon_slave_0">
+   end="gaa_fitness_0.hps_slave">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x04000000" />
   <parameter name="defaultConnection" value="false" />
@@ -711,6 +724,15 @@
    kind="avalon"
    version="18.1"
    start="hps_0.h2f_axi_master"
+   end="sdram_controller_0.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="gaa_fitness_0.sdram_controller_master"
    end="sdram_controller_0.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
