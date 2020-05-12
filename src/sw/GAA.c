@@ -122,8 +122,7 @@ int main(int argc, char** argv) {
     printf("Done.\n");
 
     printf("Reading cleared SDRAM:\n");
-    for (uint16_t i=0; i<5; i++);
-    {
+    for (uint16_t i=0; i<5; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
     }
     
