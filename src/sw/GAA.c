@@ -128,16 +128,15 @@ int main(int argc, char** argv) {
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
-    for (uint8_t i=0; i<10; i++) {
+    for (uint8_t i=0; i<20; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), i);
         *(sdram_ptr + i) = i;
     }
 
     // read from sdram:
     printf("Reading from SDRAM:\n");
-    for (int i=0; i<10; i++) {
+    for (int i=0; i<20; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
-        sleep(1);
     }
 
     if ( (gaa_fitness_fd = open(filename, O_RDWR)) == -1) {
