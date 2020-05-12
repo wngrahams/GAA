@@ -33,8 +33,8 @@
 #define SDRAM_ADDR 0xC0000000
 #define SDRAM_SPAN 0x04000000  // 64 MB of SDRAM from 0xC0000000 to 0xC3FFFFFF
 
-#define MAX_NUM_EDGES (SDRAM_SPAN/(sizeof(uint8_t)*2))
-#define MAX_NUM_NODES (uint8_t)0xFF
+#define MAX_NUM_EDGES (SDRAM_SPAN/(sizeof(uint16_t)*2))
+#define MAX_NUM_NODES (uint16_t)0xFFFF
 
 
 int main(int argc, char** argv) {
