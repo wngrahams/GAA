@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     int mmap_fd;                          // file descriptor for /dev/mem
     void* sdram_mem;                      // void* pointer to base of sdram
 
-    volatile uint8_t *sdram_ptr = NULL;  // pointer to data in sdram
+    volatile uint16_t *sdram_ptr = NULL;  // pointer to data in sdram
                                           // We store the edges as two 32-bit 
                                           // nodes, so this indexes the 
                                           // individual nodes of an edge.
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
     // mmap file descriptor is no longer needed and can be closed
     close(mmap_fd);
 
-    sdram_ptr = (uint8_t*)(sdram_mem);
+    sdram_ptr = (uint16_t*)(sdram_mem);
 
     printf("Hardware Constraints:\n");
     printf("\tMax number of edges: %u\n", MAX_NUM_EDGES);
@@ -117,13 +117,13 @@ int main(int argc, char** argv) {
     printf("Clearing SDRAM... ");
     fflush(stdout);
     for (int i=0; i<MAX_NUM_EDGES*2; i++) {
-        *(sdram_ptr + i) = (uint8_t)0; 
+        *(sdram_ptr + i) = (uint16_t)0; 
     }
     printf("Done.\n");
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
-    for (uint8_t i=0; i<5; i++) {
+    for (uint16_t i=0; i<5; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), i);
         *(sdram_ptr + i) = i;
     }
