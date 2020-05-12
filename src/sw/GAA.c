@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     int mmap_fd;                          // file descriptor for /dev/mem
     void* sdram_mem;                      // void* pointer to base of sdram
 
-    volatile uint32_t *sdram_ptr = NULL;  // pointer to data in sdram
+    volatile uint8_t *sdram_ptr = NULL;  // pointer to data in sdram
                                           // We store the edges as two 32-bit 
                                           // nodes, so this indexes the 
                                           // individual nodes of an edge.
