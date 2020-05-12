@@ -33,8 +33,8 @@
 #define SDRAM_ADDR 0xC0000000
 #define SDRAM_SPAN 0x04000000  // 64 MB of SDRAM from 0xC0000000 to 0xC3FFFFFF
 
-#define MAX_NUM_EDGES (SDRAM_SPAN/(sizeof(uint32_t)*2))
-#define MAX_NUM_NODES (uint32_t)0xFFFFFFFF
+#define MAX_NUM_EDGES (SDRAM_SPAN/(sizeof(uint8_t)*2))
+#define MAX_NUM_NODES (uint8_t)0xFF
 
 
 int main(int argc, char** argv) {
@@ -87,23 +87,7 @@ int main(int argc, char** argv) {
 
     printf("GAA Fitness test beginning\n");
 
-    if ( (gaa_fitness_fd = open(filename, O_RDWR)) == -1) {
-        fprintf(stderr, "could not open %s\n", filename);
-        return -1;
-    }
-
-    set_input_values(&initial_inputs, gaa_fitness_fd);
-    out = print_output_value(gaa_fitness_fd);
-    assert(out == 0xFF);
-
-    for (_i=0x00, _j=0x0F; _i<=0x0F && _j>=0x00; _i++, _j--) {
-        current_inputs.p1 = _i;
-        current_inputs.p2 = _j;
-        set_input_values(&current_inputs, gaa_fitness_fd);
-        out = print_output_value(gaa_fitness_fd);
-        //usleep(500000);
-    }
-
+    
     printf("Testing mmap of FPGA SDRAM:\n");
 
     // open memory with uncached access:
@@ -122,7 +106,7 @@ int main(int argc, char** argv) {
     // mmap file descriptor is no longer needed and can be closed
     close(mmap_fd);
 
-    sdram_ptr = (uint32_t*)(sdram_mem);
+    sdram_ptr = (uint8_t*)(sdram_mem);
 
     printf("Hardware Constraints:\n");
     printf("\tMax number of edges: %u\n", MAX_NUM_EDGES);
@@ -133,13 +117,13 @@ int main(int argc, char** argv) {
     printf("Clearing SDRAM... ");
     fflush(stdout);
     for (int i=0; i<MAX_NUM_EDGES*2; i++) {
-        *(sdram_ptr + i) = (uint32_t)0; 
+        *(sdram_ptr + i) = (uint8_t)0; 
     }
     printf("Done.\n");
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
-    for (uint32_t i=0; i<5; i++) {
+    for (uint8_t i=0; i<5; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), i);
         *(sdram_ptr + i) = i;
     }
@@ -149,6 +133,25 @@ int main(int argc, char** argv) {
     for (int i=0; i<5; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
     }
+
+    if ( (gaa_fitness_fd = open(filename, O_RDWR)) == -1) {
+        fprintf(stderr, "could not open %s\n", filename);
+        return -1;
+    }
+
+    //set_input_values(&initial_inputs, gaa_fitness_fd);
+    out = print_output_value(gaa_fitness_fd);
+    //assert(out == 0xFF);
+
+    /*
+    for (_i=0x00, _j=0x0F; _i<=0x0F && _j>=0x00; _i++, _j--) {
+        current_inputs.p1 = _i;
+        current_inputs.p2 = _j;
+        set_input_values(&current_inputs, gaa_fitness_fd);
+        out = print_output_value(gaa_fitness_fd);
+        //usleep(500000);
+    }*/
+
 
     // unmap mapped memory
     munmap(sdram_mem, SDRAM_SPAN);
