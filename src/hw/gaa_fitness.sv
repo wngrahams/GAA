@@ -17,12 +17,58 @@ module gaa_fitness(input logic clk,
                    output logic[ 1:0] sdram_byteenable_n,
 	           output logic       sdram_chipselect,
 		   output logic       sdram_read_n,
-                   input  logic[15:0] sdram_readdata,
+                   input  logic[15:0]  sdram_readdata,
 		   input  logic       sdram_readdatavalid,
                    input  logic       sdram_waitrequest
                    /* End Avalon MM master signals */
 );
 
+	logic [24:0] addr;
+	logic [15:0] tempdata;
+	enum logic [2:0] {START, READ, DONE} state;
+
+	assign addr = 25'd0;
+
+	always_ff @(posedge clk) begin
+		if (reset) hps_waitrequest = 1'b1;
+		if (hps_chipselect && hps_read) begin
+
+			sdram_byteenable_n <= 2'b00;
+			hps_waitrequest <= sdram_waitrequest;
+
+			case (state)
+				START: begin
+					sdram_chipselect <= 1'b1;
+					sdram_read_n     <= 1'b0;
+					
+					if (!sdram_waitrequest) begin
+						sdram_address <= addr;
+						state <= READ;
+					end
+					else state <= START;
+				end
+				
+				READ: begin
+					tempdata <= sdram_readdata;
+					if (sdram_readdatavalid) begin
+						hps_readdata <= tempdata[7:0]; 
+						state <= DONE;
+					end
+					else state <= READ; 		
+				end
+
+				DONE: begin
+					hps_readdata <= tempdata[7:0];
+					sdram_read_n <= 1'b1;
+					sdram_chipselect <= 1'b0;
+				end
+				
+				default: state <= START;
+			endcase
+		end
+	end 
+
+	/*
 	//logic [7:0] p1, p2, p1xorp2;
 	logic [24:0] read_addr;
 	enum logic [2:0] {READY, WAIT, DONE} read_state;
@@ -32,8 +78,8 @@ module gaa_fitness(input logic clk,
 		if (hps_chipselect && hps_read) begin
 			case (hps_address)
 				2'b00:   read_addr <= 25'd0;
-				2'b01:   read_addr <= 25'd2;
-				2'b10:   read_addr <= 25'd4;
+				2'b01:   read_addr <= 25'd1;
+				2'b10:   read_addr <= 25'd2;
 				default: read_addr <= 25'd0;
 			endcase
 		end
@@ -41,17 +87,6 @@ module gaa_fitness(input logic clk,
 
 	always_ff @(posedge clk) begin
 		case (read_state)
-			/*
-			READY: begin
-				
-			end
-
-			START_READ: begin
-				sdram_read_n <= 1'b0;
-				read_state <= WAIT;
-			end
-			*/
-
 			READY: begin
 				if (hps_chipselect && hps_read) begin
 					sdram_chipselect <= 1'b1;
@@ -84,6 +119,7 @@ module gaa_fitness(input logic clk,
 		sdram_address = read_addr;
 		sdram_read_n = ~hps_read;	
         end
+	*/
 
 	/*
 	always_ff @(posedge clk) begin
