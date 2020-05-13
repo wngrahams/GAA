@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
     }
 
     //set_input_values(&initial_inputs, gaa_fitness_fd);
-    //out = print_output_value(gaa_fitness_fd);
+    out = print_output_value(gaa_fitness_fd);
     //assert(out == 0xFF);
 
     /*
