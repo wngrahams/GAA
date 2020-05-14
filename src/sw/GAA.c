@@ -122,20 +122,20 @@ int main(int argc, char** argv) {
     printf("Done.\n");
 
     printf("Reading cleared SDRAM:\n");
-    for (uint8_t i=0; i<20; i++) {
+    for (uint8_t i=0; i<10; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
     }
     
     // write to sdram:
     printf("Writing to SDRAM:\n");
-    for (uint8_t i=0; i<20; i++) {
+    for (uint8_t i=0; i<10; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), i);
         *(sdram_ptr + i) = i+1;
     }
 
     // read from sdram:
     printf("Reading from SDRAM:\n");
-    for (int i=0; i<20; i++) {
+    for (int i=0; i<10; i++) {
         printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
     }
 
