@@ -129,8 +129,8 @@ int main(int argc, char** argv) {
     // write to sdram:
     printf("Writing to SDRAM:\n");
     for (uint16_t i=0; i<20; i++) {
-        printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), i);
-        *(sdram_ptr + i) = i+1;
+        printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), 0xFFFF);
+        *(sdram_ptr + i) = 0xFFFF;
     }
 
     // read from sdram:
