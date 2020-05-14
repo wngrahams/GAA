@@ -25,8 +25,8 @@
 
 /* Device Registers */
 #define P1(x)      (x)
-#define P2(x)      ((x)+1)
-#define P1XORP2(x) ((x)+2)
+#define P2(x)      ((x)+2)
+#define P1XORP2(x) ((x)+4)
 
 /*
  * Information about our device
