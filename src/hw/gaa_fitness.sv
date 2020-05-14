@@ -25,45 +25,66 @@ module gaa_fitness(input logic clk,
 
 	logic [24:0] addr;
 	logic [15:0] tempdata;
-	enum logic [2:0] {START, READ, DONE} state;
+	enum logic [2:0] {WAIT, READ, DONE} state;
 
 	assign addr = 25'd0;
 
 	always_ff @(posedge clk) begin
-		if (reset) hps_waitrequest = 1'b1;
+		if (reset) hps_waitrequest <= 1'b1;
 		if (hps_chipselect && hps_read) begin
 
-			sdram_byteenable_n <= 2'b00;
-			hps_waitrequest <= sdram_waitrequest;
-
 			case (state)
-				START: begin
+				WAIT: begin
+					// avalon mm master read protocol:
+					// 1. assert address, byteenable and read after rising edge
+					sdram_address <= addr;
+					sdram_byteenable_n <= 2'b00;
+					sdram_read_n <= 1'b0;
 					sdram_chipselect <= 1'b1;
-					sdram_read_n     <= 1'b0;
+					sdram_address <= addr;
+
+					// data is not ready, so assert waitrequest to this module's master
+					hps_waitrequest <= 1'b1;
+
+					// store the output of the sdram controller, even if it isn't ready
+					tempdata <= sdram_readdata;
 					
+					// once the sdram controller signals the data is ready, move to the 
+					// next state
 					if (!sdram_waitrequest) begin
-						sdram_address <= addr;
 						state <= READ;
 					end
-					else state <= START;
+					else state <= WAIT;
 				end
 				
 				READ: begin
-					tempdata <= sdram_readdata;
-					if (sdram_readdatavalid) begin
-						hps_readdata <= tempdata[7:0]; 
-						state <= DONE;
-					end
-					else state <= READ; 		
+					// data is ready, so put it in the output and signal that we're done
+					hps_waitrequest <= 1'b0;
+					hps_readdata <= tempdata[7:0];
+					
+					// deassert sdram signals and go to DONE state
+					sdram_address <= 25'bx;
+					sdram_byteenable_n <= 2'bx;
+					sdram_read_n <= 1'b1;
+					sdram_chipselect <= 1'b0;
+					state <= DONE;
 				end
 
 				DONE: begin
+					// wait here one state so we don't start an unnecesary read to sdram
+					// the ngo back to WAIT
+					state <= WAIT;
+
+					/*
+					hps_waitrequest <= 1'b0;
 					hps_readdata <= tempdata[7:0];
 					sdram_read_n <= 1'b1;
 					sdram_chipselect <= 1'b0;
+					sdram_address <= 25'bx;
+					*/
 				end
 				
-				default: state <= START;
+				default: state <= WAIT;
 			endcase
 		end
 	end 
