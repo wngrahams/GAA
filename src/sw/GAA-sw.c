@@ -113,7 +113,18 @@ int main(int argc, char** argv) {
             sorted_indices_list[i][j] = j;
         }
     }
-    
+
+    // create files for output to python script
+    FILE *fp[NUM_ISLANDS+1];
+    fp[0] = fopen("out/all.txt", "w");
+    assert(NUM_ISLANDS < 9);
+    for (int i=1; i<NUM_ISLANDS+1; i++) {
+        // Allocates storage
+        char *temp = (char*)malloc(12 * sizeof(char));
+        sprintf(temp, "out/island_%d.txt", i-1);
+        fp[i] = fopen(temp, "w");
+    }
+
     /* EVOLUTIONARY LOOP */
     for (int gen=0; gen<NUM_GENERATIONS; gen++) {
 
@@ -317,6 +328,23 @@ int main(int argc, char** argv) {
 
         } /* END ISLAND LOOP */
 
+        // sort for output to file
+        int best_fitness_overall = INT_MAX;
+        for (int isl=0; isl<NUM_ISLANDS; isl++) {
+            int best_fitness = INT_MAX;
+            for (int ind=0; ind<POP_SIZE; ind++) {
+                if (archipelago[isl][ind].fitness < best_fitness) {
+                    best_fitness = archipelago[isl][ind].fitness;
+                }
+                if (best_fitness < best_fitness_overall) {
+                    best_fitness_overall = best_fitness;
+                }
+            }
+            fprintf(fp[isl+1], "%d\n", best_fitness);
+        }
+        // write best overall fitness
+        fprintf(fp[0], "%d\n", best_fitness_overall);
+
     } /* END EVOLUTIONARY LOOP */
 
     printf("\r%d generations complete.  \n", NUM_GENERATIONS);
@@ -415,6 +443,11 @@ int main(int argc, char** argv) {
             free(archipelago[isl][idv].partition);
         }
         free(archipelago[isl]);
+    }
+
+    // close files
+    for (int i=0; i<NUM_ISLANDS+1; i++) {
+        fclose(fp[i]);
     }
 
 cleanup_graph_contents:
