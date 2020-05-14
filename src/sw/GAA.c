@@ -708,7 +708,7 @@ uint8_t print_output_value(const int fd) {
     }
 
     printf("0x%X\n",
-	       (gaa_arg.outputs.p1xorp2);
+	       gaa_arg.outputs.p1xorp2);
 
     return gaa_arg.outputs.p1xorp2;
 }
