@@ -12,11 +12,11 @@
 #include <linux/types.h>
 
 typedef struct {
-    uint8_t p1, p2;  // u8 is an unsigned byte
+    uint16_t p1, p2;  // u8 is an unsigned byte
 } gaa_fitness_inputs_t;
 
 typedef struct {
-    uint8_t p1xorp2;
+    uint16_t p1xorp2;
 } gaa_fitness_outputs_t;
 
 typedef struct {
