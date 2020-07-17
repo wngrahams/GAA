@@ -1,0 +1,2 @@
+obj-m := gaa_fitness_driver.o
+

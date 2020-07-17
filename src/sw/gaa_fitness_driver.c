@@ -1,5 +1,5 @@
 /*
- * gaa_fitness.c
+ * gaa_fitness_driver.c
  *
  * Device driver for GAA Fitness Peripheral
  *
@@ -18,7 +18,8 @@
 #include <linux/of_address.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-#include "gaa_fitness.h"
+
+#include "gaa_fitness_driver.h"
 
 #define DRIVER_NAME "gaa_fitness"
 

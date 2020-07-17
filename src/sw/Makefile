@@ -1,30 +1,21 @@
-CC  = gcc
-CXX = g++
+UNAME := $(shell uname)
 
-INCLUDES = -I../../lib
-
-CFLAGS   = -O0 -g -Wall -std=c99   $(INCLUDES)
-CXXFLAGS = -O0 -g -Wall -std=c++11 $(INCLUDES)
-
-LDFLAGS = -g -L../../lib 
-LDLIBS  = -lllist
-
-executables = GAA
-objects = GAA.o graph-parser.o
-headers := ga-params.h ga-utils.h bitarray.h graph.h selection.h crossover.h
-headers += mergesort.h
+ifeq ($(UNAME), Darwin)
+	filename := Makefile-$(UNAME)
+endif
+ifeq ($(UNAME), Linux)
+	filename := Makefile-$(UNAME)
+endif
 
 .PHONY: default
-default: $(executables)
-
-$(executables): graph-parser.o
-
-$(objects): $(headers) 
+default:
+	@$(MAKE) -f $(filename)
 
 .PHONY: clean
 clean:
-	rm -f *~ a.out core $(objects) $(executables)
+	@$(MAKE) -f $(filename) clean
 
 .PHONY: all
-all: clean default
+all:
+	@$(MAKE) -f $(filename) all
 

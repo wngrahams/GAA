@@ -10,4 +10,3 @@ clean:
 all:
 	cd ./sw && $(MAKE) all
 
-

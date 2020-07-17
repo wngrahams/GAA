@@ -1,0 +1,47 @@
+ifneq (${KERNELRELEASE},)
+
+	# KERNELRELASE is defined, therefore the makefile was called from the
+	# kernel build system
+	# obj-m is set in Kbuild file (obj-m := gaa_fitness_driver.o)
+
+else
+
+	# KERNELRELEASE is not defined, therefore makefile was called from command
+	# line
+	
+	KERNEL_SOURCE := /usr/src/linux-headers-$(shell uname -r)
+	PWD := $(shell pwd)
+
+	CC = gcc
+	CXX = g++
+
+	INCLUDES = -I../../lib
+
+	CFLAGS   = -O0 -g -Wall -std=c99   $(INCLUDES)
+	CXXFLAGS = -O0 -g -Wall -std=c++11 $(INCLUDES)
+
+	LDFLAGS = -g -L../../lib
+	LDLIBS  = -lllist
+
+	GAA_HEADERS := bitarray.h  crossover.h ga-params.h ga-utils.h graph.h 
+	GAA_HEADERS += graph-parser.h mergesort.h selection.h
+
+default: module GAA
+
+module:
+	${MAKE} -C ${KERNEL_SOURCE} M=${PWD} modules
+
+clean:
+	${MAKE} -C ${KERNEL_SOURCE} M=${PWD} clean
+	${RM} GAA 
+
+GAA: graph-parser.o
+
+GAA.o: $(GAA_HEADERS)
+graph-parser.o: ga-utils.h graph-parser.h graph.h
+
+.PHONY: all
+all: clean default
+
+endif
+

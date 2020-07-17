@@ -1,12 +1,12 @@
 /*
- * gaa_fitness.h
+ * gaa_fitness_driver.h
  *
  * Header files that defines ioctls for reading and writing with gaa_fitness
  * peripheral
  */
 
-#ifndef _GAA_FITNESS_H_
-#define _GAA_FITNESS_H_
+#ifndef _GAA_FITNESS_DRIVER_H_
+#define _GAA_FITNESS_DRIVER_H_
 
 #include <linux/ioctl.h>
 #include <linux/types.h>
@@ -30,5 +30,5 @@ typedef struct {
 #define GAA_FITNESS_WRITE_INPUTS _IOW(GAA_FITNESS_MAGIC, 1, gaa_fitness_arg_t*)
 #define GAA_FITNESS_READ_OUTPUTS _IOR(GAA_FITNESS_MAGIC, 2, gaa_fitness_arg_t*)
 
-#endif /* _GAA_FITNESS_H_ */
+#endif /* _GAA_FITNESS_DRIVER_H_ */
 

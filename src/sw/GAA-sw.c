@@ -1,48 +1,28 @@
 /*
- * GAA.c
+ * GAA-sw.c
  *
- * Graph partitioning using a genetic algorithm with hardware acceleration
+ * Graph partitioning using a genetic algorithm (SOFTWARE ONLY VERSION)
  *
  */
 
 #define _POSIX_C_SOURCE 199309L
 
-#include <assert.h>     // assert
-#include <fcntl.h>
-#include <limits.h>     // INT_MAX
-#include <stdio.h>      // printf
-#include <stdlib.h>     // malloc
-#include <string.h>     // memset
-#include <sys/ioctl.h>  // ioctl
-#include <sys/mman.h>   // mmap
-#include <sys/types.h>
-#include <sys/stat.h>   
-#include <time.h>       // time
-#include <unistd.h>
+#include <assert.h>  // assert
+#include <limits.h>  // INT_MAX
+#include <stdio.h>   // printf
+#include <stdlib.h>  // malloc
+#include <string.h>  // memset
+#include <time.h>    // time
 
 #include "bitarray.h"
 #include "crossover.h"
-#include "GAA.h"
+#include "GAA-sw.h"
 #include "ga-params.h"
 #include "ga-utils.h"
-#include "gaa_fitness_driver.h"
 #include "graph-parser.h"
 #include "mergesort.h"
 #include "selection.h"
 
-#define SDRAM_ADDR 0xC0000000
-#define SDRAM_SPAN 0x04000000  // 64 MB of SDRAM from 0xC0000000 to 0xC3FFFFFF
-
-int mmap_fd;                   // file descriptor for /dev/mem
-void* sdram_mem;               // void* pointer to base of sdram
-
-volatile uint16_t *sdram_ptr = NULL;  // pointer to data in sdram
-                                          // We store the edges as two 32-bit 
-                                          // nodes, so this indexes the 
-                                          // individual nodes of an edge.
-                                          // Must be volatile, since the data 
-                                          // in the sdram may change outside of
-                                          // this userspace program.
 
 int main(int argc, char** argv) {
 
@@ -64,85 +44,10 @@ int main(int argc, char** argv) {
 
     int migration_count;
 
-    
-
     if (argc != 2) {
         fprintf(stderr, "%s\n", "usage: gaa <graph_file>");
         exit(1);
     }
-
-    // TEST DRIVER
-    int gaa_fitness_fd;
-    gaa_fitness_arg_t gaa_arg;
-    uint8_t _i, _j, out;
-
-    static const char filename[] = "/dev/gaa_fitness";
-
-    static const gaa_fitness_inputs_t initial_inputs = { 0x0F , 0xF0 };
-
-    gaa_fitness_inputs_t current_inputs = {.p1 = initial_inputs.p1,
-                                         .p2 = initial_inputs.p2};
-
-    printf("GAA Fitness test beginning\n");
-
-    if ( (gaa_fitness_fd = open(filename, O_RDWR)) == -1) {
-        fprintf(stderr, "could not open %s\n", filename);
-        return -1;
-    }
-
-    set_input_values(&initial_inputs, gaa_fitness_fd);
-    out = print_output_value(gaa_fitness_fd);
-    assert(out == 0xFF);
-
-    for (_i=0x00, _j=0x0F; _i<=0x0F && _j>=0x00; _i++, _j--) {
-        current_inputs.p1 = _i;
-        current_inputs.p2 = _j;
-        set_input_values(&current_inputs, gaa_fitness_fd);
-        out = print_output_value(gaa_fitness_fd);
-        //usleep(500000);
-    }
-
-    printf("Testing mmap of FPGA SDRAM:\n");
-
-    // open memory with uncached access:
-    if((mmap_fd = open("/dev/mem", (O_RDWR | O_SYNC))) == -1) {
-        printf("ERROR: could not open \"/dev/mem\"...\n");
-        exit(1);
-    }
-    // mmap(addr, length, prot, flags, fd, offset);
-    sdram_mem = mmap(0, SDRAM_SPAN, (PROT_READ|PROT_WRITE), MAP_SHARED, 
-                     mmap_fd, SDRAM_ADDR);
-    if (MAP_FAILED == sdram_mem) {
-        fprintf(stderr, "MMAP FAILED\n");
-        exit(1);
-    }
-
-    // mmap file descriptor is no longer needed and can be closed
-    close(mmap_fd);
-
-    sdram_ptr = (uint16_t*)(sdram_mem);
-    
-    // write to sdram:
-    printf("Writing to SDRAM:\n");
-    for (uint16_t i=0; i<5; i++) {
-        *(sdram_ptr + i) = i;
-        sleep(1);
-        printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
-
-    }
-
-    // read from sdram:
-    printf("Reading from SDRAM:\n");
-    for (int i=0; i<5; i++) {
-        printf("\tAddr: %p Value: %d\n", (sdram_ptr + i), *(sdram_ptr + i));
-    }
-
-    // unmap mapped memory
-    munmap(sdram_mem, SDRAM_SPAN);
-
-    printf("GAA Fitness test finished\n");
-
-    // END TEST
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &total_start);
 
@@ -663,40 +568,6 @@ void shuffle(int *arr, int n) {
             arr[j] = arr[i];
             arr[i] = t;
         }
-    }
-}
-
-// FUNCTIONS FOR INTERACTING WITH GAA_FITNESS DEVICE DRIVER:
-
-/*
- * Read and print output value
- */
-uint8_t print_output_value(const int fd) {
-
-    gaa_fitness_arg_t gaa_arg;
-
-    if (ioctl(fd, GAA_FITNESS_READ_OUTPUTS, &gaa_arg)) {
-        perror("ioctl(GAA_FITNESS_READ_OUTPUTS) failed");
-        return 0;
-    }
-
-    printf("0x%X xor 0x%X = 0x%X\n",
-	       gaa_arg.inputs.p1, gaa_arg.inputs.p2, gaa_arg.outputs.p1xorp2);
-
-    return gaa_arg.outputs.p1xorp2;
-}
-
-/*
- * Set the inputs
- */
-void set_input_values(const gaa_fitness_inputs_t* i, const int fd) {
-
-    gaa_fitness_arg_t gaa_arg;
-    gaa_arg.inputs = *i;
-
-    if (ioctl(fd, GAA_FITNESS_WRITE_INPUTS, &gaa_arg)) {
-        perror("ioctl(GAA_FITNESS_WRITE_INPUTS) failed");
-        return;
     }
 }
 
